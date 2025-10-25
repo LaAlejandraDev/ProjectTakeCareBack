@@ -1,0 +1,29 @@
+# Archivos y carpetas temporales de Visual Studio
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.log
+*.db
+*.sqlite
+*.dll
+*.pdb
+*.exe
+*.userprefs
+*.swp
+*.bak
+*.tmp
+
+# Archivos de configuración local
+appsettings.Development.json
+launchSettings.json
+
+# Archivos del sistema
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Archivos de publicación
+publish/
