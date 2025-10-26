@@ -1,9 +1,9 @@
-using BackTakeCare.Data;
+using ProjectTakeCareBack.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContext<TakeCareContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSql")));
 
 

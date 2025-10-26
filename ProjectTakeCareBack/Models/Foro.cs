@@ -1,4 +1,5 @@
-﻿namespace BackTakeCare.Models
+﻿namespace ProjectTakeCareBack.Models
+
 {
     public class Foro
     {

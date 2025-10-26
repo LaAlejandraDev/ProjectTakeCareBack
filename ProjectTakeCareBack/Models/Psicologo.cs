@@ -1,19 +1,28 @@
-﻿namespace BackTakeCare.Models
+﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ProjectTakeCareBack.Models
+
 {
     public class Psicologo
     {
         public int Id { get; set; }
-        public int UsuarioId { get; set; }
+
+        public int IdUsuario { get; set; }
         public Usuario Usuario { get; set; } = null!;
-        public string Especialidad { get; set; } = string.Empty;
 
-        public string? CedulaProfesional { get; set; }
-        public string? Matricula { get; set; }
+        public string CedulaProfesional { get; set; } = null!;
+        public string Especialidad { get; set; } = null!;
+        public string? Descripcion { get; set; }
+        public int ExperienciaAnios { get; set; }
+        public string? UniversidadEgreso { get; set; }
+        public string? DireccionConsultorio { get; set; }
 
-        public string? ReferenciaProfesional { get; set; }
+        public decimal CalificacionPromedio { get; set; } = 0;
+        public int TotalResenas { get; set; } = 0;
 
-
-        public bool Activo { get; set; } = true;
-        public ICollection<Paciente>? Pacientes { get; set; }
+        public ICollection<Cita>? Citas { get; set; }
+        public ICollection<Recurso>? Recursos { get; set; }
+        public ICollection<SuscripcionPsicologo>? Suscripciones { get; set; }
     }
 }

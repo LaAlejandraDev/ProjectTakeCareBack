@@ -1,17 +1,28 @@
-﻿namespace BackTakeCare.Models
+﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ProjectTakeCareBack.Models
+
 {
     public class Paciente
     {
         public int Id { get; set; }
-        public int UsuarioId { get; set; }
+
+        public int IdUsuario { get; set; }
         public Usuario Usuario { get; set; } = null!;
+
         public DateOnly FechaNacimiento { get; set; }
-        public string Genero { get; set; } = string.Empty;
+        public string Genero { get; set; } = null!;
+        public string? Ciudad { get; set; }
+        public string? EstadoCivil { get; set; }
+
         public string? Diagnostico { get; set; }
-        public string? Direccion { get; set; }
-        public bool Activo { get; set; } = true;
+        public string? AntecedentesMedicos { get; set; }
+        public string? ContactoEmergencia { get; set; }
+
+        public ICollection<Cita>? Citas { get; set; }
+        public ICollection<Chat>? Chats { get; set; }
         public ICollection<DiarioEmocional>? DiarioEmocional { get; set; }
-        public int PsicologoAsignadoId { get; set; }
-        public Psicologo PsicologoAsignado { get; set; } = null!;
+        public ICollection<CrisisAlerta>? CrisisAlerts { get; set; }
     }
 }
