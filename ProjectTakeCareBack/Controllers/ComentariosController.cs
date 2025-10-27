@@ -12,47 +12,47 @@ namespace ProjectTakeCareBack.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CommentsController : ControllerBase
+    public class ComentariosController : ControllerBase
     {
         private readonly TakeCareContext _context;
 
-        public CommentsController(TakeCareContext context)
+        public ComentariosController(TakeCareContext context)
         {
             _context = context;
         }
 
-        // GET: api/Comments
+        // GET: api/Comentarios
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Comment>>> GetComments()
+        public async Task<ActionResult<IEnumerable<Comentario>>> GetComentarios()
         {
-            return await _context.Comments.ToListAsync();
+            return await _context.Comentarios.ToListAsync();
         }
 
-        // GET: api/Comments/5
+        // GET: api/Comentarios/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Comment>> GetComment(int id)
+        public async Task<ActionResult<Comentario>> GetComentario(int id)
         {
-            var comment = await _context.Comments.FindAsync(id);
+            var comentario = await _context.Comentarios.FindAsync(id);
 
-            if (comment == null)
+            if (comentario == null)
             {
                 return NotFound();
             }
 
-            return comment;
+            return comentario;
         }
 
-        // PUT: api/Comments/5
+        // PUT: api/Comentarios/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutComment(int id, Comment comment)
+        public async Task<IActionResult> PutComentario(int id, Comentario comentario)
         {
-            if (id != comment.Id)
+            if (id != comentario.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(comment).State = EntityState.Modified;
+            _context.Entry(comentario).State = EntityState.Modified;
 
             try
             {
@@ -60,7 +60,7 @@ namespace ProjectTakeCareBack.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!CommentExists(id))
+                if (!ComentarioExists(id))
                 {
                     return NotFound();
                 }
@@ -73,36 +73,36 @@ namespace ProjectTakeCareBack.Controllers
             return NoContent();
         }
 
-        // POST: api/Comments
+        // POST: api/Comentarios
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Comment>> PostComment(Comment comment)
+        public async Task<ActionResult<Comentario>> PostComentario(Comentario comentario)
         {
-            _context.Comments.Add(comment);
+            _context.Comentarios.Add(comentario);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetComment", new { id = comment.Id }, comment);
+            return CreatedAtAction("GetComentario", new { id = comentario.Id }, comentario);
         }
 
-        // DELETE: api/Comments/5
+        // DELETE: api/Comentarios/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteComment(int id)
+        public async Task<IActionResult> DeleteComentario(int id)
         {
-            var comment = await _context.Comments.FindAsync(id);
-            if (comment == null)
+            var comentario = await _context.Comentarios.FindAsync(id);
+            if (comentario == null)
             {
                 return NotFound();
             }
 
-            _context.Comments.Remove(comment);
+            _context.Comentarios.Remove(comentario);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool CommentExists(int id)
+        private bool ComentarioExists(int id)
         {
-            return _context.Comments.Any(e => e.Id == id);
+            return _context.Comentarios.Any(e => e.Id == id);
         }
     }
 }

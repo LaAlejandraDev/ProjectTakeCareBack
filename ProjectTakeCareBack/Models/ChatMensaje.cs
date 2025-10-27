@@ -1,4 +1,6 @@
-﻿namespace ProjectTakeCareBack.Models
+﻿using System.Text.Json.Serialization;
+
+namespace ProjectTakeCareBack.Models
 {
     public class ChatMensaje
     {
@@ -9,6 +11,7 @@
         public bool Leido { get; set; } = false;
         public DateTime Fecha { get; set; } = DateTime.UtcNow;
 
+        [JsonIgnore] 
         public Chat Chat { get; set; } = null!;
     }
 }

@@ -24,7 +24,7 @@ namespace ProjectTakeCareBack.Models
         public Paciente? Paciente { get; set; }
 
         public ICollection<Post>? Publicaciones { get; set; }
-        public ICollection<Comment>? Comentarios { get; set; }
+        public ICollection<Comentario>? Comentarios { get; set; }
         public ICollection<Notificacion>? Notificaciones { get; set; }
     }
 }
