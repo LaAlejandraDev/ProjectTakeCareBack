@@ -50,28 +50,49 @@ namespace ProjectTakeCareBack.Controllers
         {
             if (id != usuario.Id)
             {
-                return BadRequest();
+                return BadRequest(new {mensaje="El ID del usuario no coincide con el parámetro proporcionado."});
             }
 
-            _context.Entry(usuario).State = EntityState.Modified;
+            var usuarioExistente = await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == id); 
+            if (usuarioExistente == null)
+            {
+                return NotFound(new { mensaje = "Usuario no encontrado." });
+            }
+
+            bool correoExistente = await _context.Usuarios.AnyAsync(u => u.Correo == usuario.Correo && u.Id != id);
+
+            if(correoExistente)
+            {
+                return BadRequest(new { mensaje = "El correo electrónico ya está en uso por otro usuario." });
+            }
+
+            usuarioExistente.Nombre = usuario.Nombre;
+            usuarioExistente.ApellidoPaterno = usuario.ApellidoPaterno;
+            usuarioExistente.ApellidoMaterno = usuario.ApellidoMaterno;
+            usuarioExistente.Correo = usuario.Correo;
+            usuarioExistente.Telefono = usuario.Telefono;
+            usuarioExistente.Rol = usuario.Rol;
+            usuarioExistente.Activo = usuario.Activo;
+
+            if (!string.IsNullOrWhiteSpace(usuario.Contrasena))
+            {
+                usuarioExistente.Contrasena = BCrypt.Net.BCrypt.HashPassword(usuario.Contrasena);
+            }
+
 
             try
             {
                 await _context.SaveChangesAsync();
+                return Ok(new { mensaje = "Uusaurio actualizado correctamente." });
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
-                if (!UsuarioExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest(new { mensaje = "Error al actualizar el usuario.", detalle = ex.Message });
             }
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = "Ocurrió un error inesperado.", detalle = ex.Message });
+            }
         }
 
         // POST: api/Usuarios
@@ -119,10 +140,12 @@ namespace ProjectTakeCareBack.Controllers
                 return NotFound();
             }
 
-            _context.Usuarios.Remove(usuario);
+            usuario.Activo = false;
+           // _context.Usuarios.Remove(usuario);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+
+            return Ok(new { mensaje = "Usuario desactivado correctamente." });
         }
 
         private bool UsuarioExists(int id)
