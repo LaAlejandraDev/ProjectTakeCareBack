@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
+using ProjectTakeCareBack.Data;
+using ProjectTakeCareBack.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ProjectTakeCareBack.Data;
-using ProjectTakeCareBack.Models;
 
 namespace ProjectTakeCareBack.Controllers
 {
@@ -78,10 +79,34 @@ namespace ProjectTakeCareBack.Controllers
         [HttpPost]
         public async Task<ActionResult<Usuario>> PostUsuario(Usuario usuario)
         {
-            _context.Usuarios.Add(usuario);
-            await _context.SaveChangesAsync();
+            try
+            {
+                bool existeCorreo = await _context.Usuarios.AnyAsync(u => u.Correo == usuario.Correo);
+                if (string.IsNullOrWhiteSpace(usuario.Contrasena))
+                {
+                    return BadRequest(new {mensaje = "La contraseña es obligatoria. "});
+                }
 
-            return CreatedAtAction("GetUsuario", new { id = usuario.Id }, usuario);
+                if (existeCorreo)
+                {
+                    return BadRequest(new { mensaje = "Ya existe un usuario registrado con ese correo." });
+                }
+
+                usuario.Contrasena = BCrypt.Net.BCrypt.HashPassword(usuario.Contrasena);
+                _context.Usuarios.Add(usuario);
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction("GetUsuario", new { id = usuario.Id }, usuario);
+               
+
+            }catch(Exception ex)
+            {
+                return BadRequest(new
+                {
+                    mensaje = "Error al crear el usuario.",
+                    detalle = ex.InnerException?.Message ?? ex.Message
+                });
+            }
         }
 
         // DELETE: api/Usuarios/5
