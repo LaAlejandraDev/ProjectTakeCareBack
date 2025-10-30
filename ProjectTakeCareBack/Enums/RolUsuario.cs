@@ -2,8 +2,8 @@
 {
     public enum RolUsuario
     {
+        Paciente,
         Administrador,
-        Psicologo,
-        Paciente
+        Psicologo
     }
 }

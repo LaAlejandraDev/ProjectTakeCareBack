@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ProjectTakeCareBack.Models
 
@@ -8,11 +9,8 @@ namespace ProjectTakeCareBack.Models
     {
         public int Id { get; set; }
 
-        public int IdUsuario { get; set; }
-        public Usuario Usuario { get; set; } = null!;
+        public int? IdUsuario { get; set; }
 
-        public DateOnly FechaNacimiento { get; set; }
-        public string Genero { get; set; } = null!;
         public string? Ciudad { get; set; }
         public string? EstadoCivil { get; set; }
 
@@ -20,9 +18,18 @@ namespace ProjectTakeCareBack.Models
         public string? AntecedentesMedicos { get; set; }
         public string? ContactoEmergencia { get; set; }
 
+        public Usuario? Usuario { get; set; } = null!;
+
+        [JsonIgnore]
         public ICollection<Cita>? Citas { get; set; }
+
+        [JsonIgnore]
         public ICollection<Chat>? Chats { get; set; }
+
+        [JsonIgnore]
         public ICollection<DiarioEmocional>? DiarioEmocional { get; set; }
+
+        [JsonIgnore]
         public ICollection<CrisisAlerta>? CrisisAlerts { get; set; }
     }
 }

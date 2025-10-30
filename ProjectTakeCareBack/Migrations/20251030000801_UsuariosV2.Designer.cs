@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectTakeCareBack.Data;
 
@@ -11,9 +12,11 @@ using ProjectTakeCareBack.Data;
 namespace ProjectTakeCareBack.Migrations
 {
     [DbContext(typeof(TakeCareContext))]
-    partial class TakeCareContextModelSnapshot : ModelSnapshot
+    [Migration("20251030000801_UsuariosV2")]
+    partial class UsuariosV2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

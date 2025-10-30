@@ -12,11 +12,11 @@ namespace ProjectTakeCareBack.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ArchivoesController : ControllerBase
+    public class ArchivosController : ControllerBase
     {
         private readonly TakeCareContext _context;
 
-        public ArchivoesController(TakeCareContext context)
+        public ArchivosController(TakeCareContext context)
         {
             _context = context;
         }

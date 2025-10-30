@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectTakeCareBack.Data;
 
@@ -11,9 +12,11 @@ using ProjectTakeCareBack.Data;
 namespace ProjectTakeCareBack.Migrations
 {
     [DbContext(typeof(TakeCareContext))]
-    partial class TakeCareContextModelSnapshot : ModelSnapshot
+    [Migration("20251029235846_PacientesV2")]
+    partial class PacientesV2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -311,6 +314,10 @@ namespace ProjectTakeCareBack.Migrations
                     b.Property<string>("EstadoCivil")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Genero")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("IdUsuario")
                         .HasColumnType("int");
 
@@ -534,10 +541,6 @@ namespace ProjectTakeCareBack.Migrations
 
                     b.Property<DateTime>("FechaRegistro")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Genero")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Nombre")
                         .IsRequired()

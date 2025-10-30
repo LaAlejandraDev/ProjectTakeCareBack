@@ -12,47 +12,47 @@ namespace ProjectTakeCareBack.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PsicologoesController : ControllerBase
+    public class RecursosController : ControllerBase
     {
         private readonly TakeCareContext _context;
 
-        public PsicologoesController(TakeCareContext context)
+        public RecursosController(TakeCareContext context)
         {
             _context = context;
         }
 
-        // GET: api/Psicologoes
+        // GET: api/Recursos
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Psicologo>>> GetPsicologos()
+        public async Task<ActionResult<IEnumerable<Recurso>>> GetRecursos()
         {
-            return await _context.Psicologos.ToListAsync();
+            return await _context.Recursos.ToListAsync();
         }
 
-        // GET: api/Psicologoes/5
+        // GET: api/Recursos/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Psicologo>> GetPsicologo(int id)
+        public async Task<ActionResult<Recurso>> GetRecurso(int id)
         {
-            var psicologo = await _context.Psicologos.FindAsync(id);
+            var recurso = await _context.Recursos.FindAsync(id);
 
-            if (psicologo == null)
+            if (recurso == null)
             {
                 return NotFound();
             }
 
-            return psicologo;
+            return recurso;
         }
 
-        // PUT: api/Psicologoes/5
+        // PUT: api/Recursos/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPsicologo(int id, Psicologo psicologo)
+        public async Task<IActionResult> PutRecurso(int id, Recurso recurso)
         {
-            if (id != psicologo.Id)
+            if (id != recurso.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(psicologo).State = EntityState.Modified;
+            _context.Entry(recurso).State = EntityState.Modified;
 
             try
             {
@@ -60,7 +60,7 @@ namespace ProjectTakeCareBack.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!PsicologoExists(id))
+                if (!RecursoExists(id))
                 {
                     return NotFound();
                 }
@@ -73,36 +73,36 @@ namespace ProjectTakeCareBack.Controllers
             return NoContent();
         }
 
-        // POST: api/Psicologoes
+        // POST: api/Recursos
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Psicologo>> PostPsicologo(Psicologo psicologo)
+        public async Task<ActionResult<Recurso>> PostRecurso(Recurso recurso)
         {
-            _context.Psicologos.Add(psicologo);
+            _context.Recursos.Add(recurso);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetPsicologo", new { id = psicologo.Id }, psicologo);
+            return CreatedAtAction("GetRecurso", new { id = recurso.Id }, recurso);
         }
 
-        // DELETE: api/Psicologoes/5
+        // DELETE: api/Recursos/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePsicologo(int id)
+        public async Task<IActionResult> DeleteRecurso(int id)
         {
-            var psicologo = await _context.Psicologos.FindAsync(id);
-            if (psicologo == null)
+            var recurso = await _context.Recursos.FindAsync(id);
+            if (recurso == null)
             {
                 return NotFound();
             }
 
-            _context.Psicologos.Remove(psicologo);
+            _context.Recursos.Remove(recurso);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool PsicologoExists(int id)
+        private bool RecursoExists(int id)
         {
-            return _context.Psicologos.Any(e => e.Id == id);
+            return _context.Recursos.Any(e => e.Id == id);
         }
     }
 }
