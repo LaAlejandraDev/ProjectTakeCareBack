@@ -23,7 +23,7 @@ namespace ProjectTakeCareBack.Models
 
         [Required]
         public int IdUsuario { get; set; }
-        public Usuario Usuario { get; set; } = null!;
+        public Usuario? Usuario { get; set; }
 
         public bool Anonimo { get; set; } = false;
 
@@ -33,4 +33,6 @@ namespace ProjectTakeCareBack.Models
         [JsonIgnore]
         public ICollection<Comentario>? Comentarios { get; set; }
     }
+
+}
 }

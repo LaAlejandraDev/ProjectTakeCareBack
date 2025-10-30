@@ -24,6 +24,71 @@ namespace ProjectTakeCareBack.Controllers
             _configuration = configuration;
         }
 
+        [HttpPost("verify-token")]
+        public async Task<IActionResult> VerifyToken([FromBody] TokenVerifyRequest request)
+        {
+            // Validar que el token no venga vacío
+            if (string.IsNullOrEmpty(request.Token))
+                return BadRequest(new { mensaje = "Token no proporcionado." });
+
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
+
+                // Validar el token
+                tokenHandler.ValidateToken(request.Token, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = true,
+                    ValidIssuer = _configuration["Jwt:Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = _configuration["Jwt:Audience"],
+                    ClockSkew = TimeSpan.Zero
+                }, out SecurityToken validatedToken);
+
+                var jwtToken = (JwtSecurityToken)validatedToken;
+
+                // Extraer el Id del usuario desde el token
+                var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+                if (userIdClaim == null)
+                    return Unauthorized(new { mensaje = "Token inválido" });
+
+                int userId = int.Parse(userIdClaim.Value);
+
+                // Verificar que el usuario exista
+                var usuario = await _context.Usuarios.FindAsync(userId);
+                if (usuario == null)
+                    return Unauthorized(new { mensaje = "Usuario no encontrado" });
+
+                // Si quieres, puedes devolver info adicional
+                return Ok(new
+                {
+                    mensaje = "Token válido",
+                    usuario = new
+                    {
+                        usuario.Id,
+                        usuario.Nombre,
+                        usuario.Correo,
+                        usuario.Rol,
+                        UltimoAcceso = usuario.UltimoAcceso
+                    }
+                });
+            }
+            catch (Exception)
+            {
+                return Unauthorized(new { mensaje = "Token inválido o expirado" });
+            }
+        }
+
+        // Modelo para la solicitud
+        public class TokenVerifyRequest
+        {
+            public string Token { get; set; } = null!;
+        }
+
+
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] UsuarioDTO login)
         {

@@ -25,14 +25,18 @@ namespace ProjectTakeCareBack.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Post>>> GetPosts()
         {
-            return await _context.Posts.ToListAsync();
+            return await _context.Posts
+                .Include(p => p.Usuario)
+                .ToListAsync();
         }
 
         // GET: api/Posts/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Post>> GetPost(int id)
         {
-            var post = await _context.Posts.FindAsync(id);
+            var post = await _context.Posts
+                .Include(p => p.Usuario)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
             if (post == null)
             {
@@ -78,8 +82,16 @@ namespace ProjectTakeCareBack.Controllers
         [HttpPost]
         public async Task<ActionResult<Post>> PostPost(Post post)
         {
+            var usuarioExistente = await _context.Usuarios.FindAsync(post.IdUsuario);
+            if (usuarioExistente == null)
+                return BadRequest($"No existe un usuario con Id {post.IdUsuario}");
+
+            post.Usuario = usuarioExistente;
+
             _context.Posts.Add(post);
             await _context.SaveChangesAsync();
+
+            await _context.Entry(post).Reference(p => p.Usuario).LoadAsync();
 
             return CreatedAtAction("GetPost", new { id = post.Id }, post);
         }
