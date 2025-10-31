@@ -112,6 +112,34 @@ namespace ProjectTakeCareBack.Controllers
             return NoContent();
         }
 
+        [HttpPut("{id}/like")]
+        public async Task<IActionResult> LikePosts(int id)
+        {
+                       var post = await _context.Posts.FindAsync(id);
+            if (post == null)
+            {
+                return NotFound(new {mensaje="El post no existe."});
+            }
+            post.LikesCount += 1;
+            _context.Entry(post).State = EntityState.Modified;
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!PostExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return Ok(new {mensaje="Like agregado correctamente.", likes = post.LikesCount});
+        }
+
         private bool PostExists(int id)
         {
             return _context.Posts.Any(e => e.Id == id);

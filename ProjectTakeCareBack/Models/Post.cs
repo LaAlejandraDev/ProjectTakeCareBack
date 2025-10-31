@@ -35,4 +35,3 @@ namespace ProjectTakeCareBack.Models
     }
 
 }
-}
