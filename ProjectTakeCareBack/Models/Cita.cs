@@ -1,4 +1,6 @@
-﻿namespace ProjectTakeCareBack.Models
+﻿using System.Text.Json.Serialization;
+
+namespace ProjectTakeCareBack.Models
 {
     public class Cita
     {
@@ -11,7 +13,10 @@
         public string? Motivo { get; set; }
         public string? Ubicacion { get; set; }
 
-        public Psicologo Psicologo { get; set; } = null!;
-        public Paciente Paciente { get; set; } = null!;
+        [JsonIgnore]
+        public Psicologo? Psicologo { get; set; } = null!;
+
+        [JsonIgnore]
+        public Paciente? Paciente { get; set; } = null!;
     }
 }

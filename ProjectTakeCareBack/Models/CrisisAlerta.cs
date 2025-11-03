@@ -1,4 +1,5 @@
 ﻿using ProjectTakeCareBack.Enums;
+using System.Text.Json.Serialization;
 
 namespace ProjectTakeCareBack.Models
 {
@@ -11,6 +12,7 @@ namespace ProjectTakeCareBack.Models
         public bool Atendido { get; set; } = false;
         public DateTime Fecha { get; set; } = DateTime.UtcNow;
 
-        public Paciente Paciente { get; set; } = null!;
+        [JsonIgnore]
+        public Paciente? Paciente { get; set; } = null!;
     }
 }

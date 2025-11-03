@@ -73,17 +73,6 @@ namespace ProjectTakeCareBack.Controllers
             return NoContent();
         }
 
-        // POST: api/Comentarios
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Comentario>> PostComentario(Comentario comentario)
-        {
-            _context.Comentarios.Add(comentario);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetComentario", new { id = comentario.Id }, comentario);
-        }
-
         // DELETE: api/Comentarios/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteComentario(int id)
@@ -98,6 +87,48 @@ namespace ProjectTakeCareBack.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        [HttpPost("{id}/comment")]
+        public async Task<IActionResult> AddComment(int id, [FromBody] Comentario comentario)
+        {
+            var post = await _context.Posts.FindAsync(id);
+            if (post == null)
+            {
+                return NotFound(new { mensaje = "El post al que intentas comentar no existe." });
+            }
+
+            comentario.IdPost = id;
+            comentario.Fecha = DateTime.UtcNow;
+
+            _context.Comentarios.Add(comentario);
+
+            post.CommentCount += 1;
+            _context.Entry(post).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = "Error al agregar el comentario", detalle = ex.Message });
+            }
+
+            return Ok(new
+            {
+                mensaje = "Comentario agregado exitosamente.",
+                comentario = new
+                {
+                    comentario.Id,
+                    comentario.Contenido,
+                    comentario.Fecha,
+                    comentario.Likes,
+                    comentario.Anonimo,
+                    comentario.IdUsuario
+                },
+                totalComentarios = post.CommentCount
+            });
         }
 
         private bool ComentarioExists(int id)

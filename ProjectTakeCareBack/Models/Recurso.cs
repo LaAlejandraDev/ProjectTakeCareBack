@@ -1,4 +1,6 @@
-﻿namespace ProjectTakeCareBack.Models
+﻿using System.Text.Json.Serialization;
+
+namespace ProjectTakeCareBack.Models
 {
     public class Recurso
     {
@@ -10,6 +12,7 @@
         public string Url { get; set; } = null!;
         public DateTime FechaSubida { get; set; } = DateTime.UtcNow;
 
-        public Psicologo Psicologo { get; set; } = null!;
+        [JsonIgnore]
+        public Psicologo? Psicologo { get; set; } = null!;
     }
 }

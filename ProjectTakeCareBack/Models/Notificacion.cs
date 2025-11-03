@@ -1,4 +1,6 @@
-﻿namespace ProjectTakeCareBack.Models
+﻿using System.Text.Json.Serialization;
+
+namespace ProjectTakeCareBack.Models
 {
     public class Notificacion
     {
@@ -9,6 +11,7 @@
         public bool Leida { get; set; } = false;
         public DateTime Fecha { get; set; } = DateTime.UtcNow;
 
-        public Usuario Usuario { get; set; } = null!;
+        [JsonIgnore]
+        public Usuario? Usuario { get; set; } = null!;
     }
 }

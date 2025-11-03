@@ -11,10 +11,10 @@ namespace ProjectTakeCareBack.Models
         public DateTime? UltimoMensajeEn { get; set; }
 
         [JsonIgnore] 
-        public Psicologo Psicologo { get; set; } = null!;
+        public Psicologo? Psicologo { get; set; } = null!;
 
         [JsonIgnore] 
-        public Paciente Paciente { get; set; } = null!;
+        public Paciente? Paciente { get; set; } = null!;
 
         [JsonIgnore] 
         public ICollection<ChatMensaje>? Mensajes { get; set; }

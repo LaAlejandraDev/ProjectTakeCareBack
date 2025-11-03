@@ -12,6 +12,6 @@ namespace ProjectTakeCareBack.Models
         public DateTime Fecha { get; set; } = DateTime.UtcNow;
 
         [JsonIgnore] 
-        public Chat Chat { get; set; } = null!;
+        public Chat? Chat { get; set; } = null!;
     }
 }

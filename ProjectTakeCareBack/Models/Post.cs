@@ -23,6 +23,8 @@ namespace ProjectTakeCareBack.Models
 
         [Required]
         public int IdUsuario { get; set; }
+
+        [JsonIgnore]
         public Usuario? Usuario { get; set; }
 
         public bool Anonimo { get; set; } = false;

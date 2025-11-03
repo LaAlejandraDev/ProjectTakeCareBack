@@ -1,4 +1,6 @@
-﻿namespace ProjectTakeCareBack.Models
+﻿using System.Text.Json.Serialization;
+
+namespace ProjectTakeCareBack.Models
 
 {
     public class DiarioEmocional
@@ -11,7 +13,8 @@
         public int Nivel { get; set; }
         public string? Comentario { get; set; }
 
-        public Paciente Paciente { get; set; } = null!;
+        [JsonIgnore]
+        public Paciente? Paciente { get; set; } = null!;
 
     }
 }

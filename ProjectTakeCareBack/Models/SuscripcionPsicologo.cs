@@ -1,4 +1,6 @@
-﻿namespace ProjectTakeCareBack.Models
+﻿using System.Text.Json.Serialization;
+
+namespace ProjectTakeCareBack.Models
 {
     public class SuscripcionPsicologo
     {
@@ -9,7 +11,10 @@
         public DateTime? FechaFin { get; set; }
         public string Estado { get; set; } = "Activa";
 
-        public Psicologo Psicologo { get; set; } = null!;
-        public Plan Plan { get; set; } = null!;
+        [JsonIgnore]
+        public Psicologo? Psicologo { get; set; } = null!;
+
+        [JsonIgnore]    
+        public Plan? Plan { get; set; } = null!;
     }
 }

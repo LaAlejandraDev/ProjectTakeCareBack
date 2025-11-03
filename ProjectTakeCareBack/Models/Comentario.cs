@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace ProjectTakeCareBack.Models
 {
@@ -8,11 +9,15 @@ namespace ProjectTakeCareBack.Models
 
         [Required]
         public int IdPost { get; set; }
-        public Post Post { get; set; } = null!;
+
+        [JsonIgnore]
+        public Post? Post { get; set; } = null!;
 
         [Required]
         public int IdUsuario { get; set; }
-        public Usuario Usuario { get; set; } = null!;
+
+        [JsonIgnore]
+        public Usuario? Usuario { get; set; } = null!;
 
         [Required(ErrorMessage = "El contenido del comentario es obligatorio")]
         [MinLength(25, ErrorMessage = "El comentario debe tener al menos 25 caracteres")]

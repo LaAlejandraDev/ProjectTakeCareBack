@@ -140,6 +140,7 @@ namespace ProjectTakeCareBack.Controllers
             return Ok(new {mensaje="Like agregado correctamente.", likes = post.LikesCount});
         }
 
+
         private bool PostExists(int id)
         {
             return _context.Posts.Any(e => e.Id == id);
