@@ -21,6 +21,45 @@ namespace ProjectTakeCareBack.Controllers
             _context = context;
         }
 
+        // GET: api/Pacientes/usuario/5
+        [HttpGet("usuario/{idUsuario}")]
+        public async Task<ActionResult<object>> GetPacienteByUsuario(int idUsuario)
+        {
+            var paciente = await _context.Pacientes
+                .Include(p => p.Usuario) // Incluye la relación con Usuario
+                .FirstOrDefaultAsync(p => p.IdUsuario == idUsuario);
+
+            if (paciente == null)
+            {
+                return NotFound(new { mensaje = "No se encontró ningún paciente asociado a este usuario." });
+            }
+
+            // Devuelve el paciente con su información de usuario asociada
+            return Ok(new
+            {
+                paciente.Id,
+                paciente.Ciudad,
+                paciente.EstadoCivil,
+                paciente.Diagnostico,
+                paciente.AntecedentesMedicos,
+                paciente.ContactoEmergencia,
+                paciente.IdUsuario,
+                Usuario = new
+                {
+                    paciente.Usuario.Id,
+                    paciente.Usuario.Nombre,
+                    paciente.Usuario.ApellidoPaterno,
+                    paciente.Usuario.ApellidoMaterno,
+                    paciente.Usuario.Correo,
+                    paciente.Usuario.Genero,
+                    paciente.Usuario.Telefono,
+                    paciente.Usuario.Rol,
+                    paciente.Usuario.Activo
+                }
+            });
+        }
+
+
         // GET: api/Pacientes
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Paciente>>> GetPacientes()
@@ -32,11 +71,13 @@ namespace ProjectTakeCareBack.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Paciente>> GetPaciente(int id)
         {
-            var paciente = await _context.Pacientes.FindAsync(id);
+            var paciente = await _context.Pacientes
+                .Include(p => p.Usuario) // Incluye la información del usuario relacionado
+                .FirstOrDefaultAsync(p => p.Id == id);
 
             if (paciente == null)
             {
-                return NotFound();
+                return NotFound(new { mensaje = "Paciente no encontrado" });
             }
 
             return paciente;
@@ -110,7 +151,7 @@ namespace ProjectTakeCareBack.Controllers
         [HttpPost]
         public async Task<ActionResult<Paciente>> PostPaciente(Paciente paciente)
         {
-            if(paciente.Usuario == null)
+            if (paciente.Usuario == null)
             {
                 return BadRequest("El objeto es requerido.");
             }
@@ -121,15 +162,15 @@ namespace ProjectTakeCareBack.Controllers
             usuario.FechaRegistro = DateTime.UtcNow;
             usuario.Activo = true;
 
-                _context.Usuarios.Add(usuario);
-                await _context.SaveChangesAsync();
+            _context.Usuarios.Add(usuario);
+            await _context.SaveChangesAsync();
 
-                paciente.IdUsuario = usuario.Id;
-                paciente.Usuario = null;
-                _context.Pacientes.Add(paciente);
-                await _context.SaveChangesAsync();
+            paciente.IdUsuario = usuario.Id;
+            paciente.Usuario = null;
+            _context.Pacientes.Add(paciente);
+            await _context.SaveChangesAsync();
 
-                return CreatedAtAction("GetPaciente", new { id = paciente.Id }, paciente);
+            return CreatedAtAction("GetPaciente", new { id = paciente.Id }, paciente);
         }
 
         // DELETE: api/Pacientes/5
@@ -137,8 +178,8 @@ namespace ProjectTakeCareBack.Controllers
         public async Task<IActionResult> DeletePaciente(int id)
         {
             var paciente = await _context.Pacientes
-                .Include(p=> p.Usuario)
-                .FirstOrDefaultAsync(p=> p.Id == id);
+                .Include(p => p.Usuario)
+                .FirstOrDefaultAsync(p => p.Id == id);
             if (paciente == null)
             {
                 return NotFound("Paciente no encontrado.");

@@ -16,7 +16,7 @@ namespace ProjectTakeCareBack.Models
         [Required]
         public int IdUsuario { get; set; }
 
-        [JsonIgnore]
+        [JsonIgnore] // Se agrega JsonIgnore para evitar el modelo completo de usuario
         public Usuario? Usuario { get; set; } = null!;
 
         [Required(ErrorMessage = "El contenido del comentario es obligatorio")]

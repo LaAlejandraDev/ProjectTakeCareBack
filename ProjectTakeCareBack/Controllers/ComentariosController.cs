@@ -21,6 +21,24 @@ namespace ProjectTakeCareBack.Controllers
             _context = context;
         }
 
+        [HttpGet("Post/{postId}")]
+        public async Task<ActionResult<IEnumerable<Comentario>>> GetComentariosByPost(int postId)
+        {
+            var comentarios = await _context.Comentarios
+                .Where(c => c.IdPost == postId)
+                .Include(c => c.Usuario)
+                .OrderByDescending(c => c.Fecha)
+                .ToListAsync();
+
+            if (comentarios == null || comentarios.Count == 0)
+            {
+                return NotFound($"No se encontraron comentarios para el post con ID {postId}.");
+            }
+
+            return Ok(comentarios);
+        }
+
+
         // GET: api/Comentarios
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Comentario>>> GetComentarios()
@@ -89,18 +107,21 @@ namespace ProjectTakeCareBack.Controllers
             return NoContent();
         }
 
-        [HttpPost("{id}/comment")]
-        public async Task<IActionResult> AddComment(int id, [FromBody] Comentario comentario)
+        [HttpPost]
+        public async Task<IActionResult> AddComment([FromBody] Comentario comentario)
         {
-            var post = await _context.Posts.FindAsync(id);
+            if (comentario == null || comentario.IdPost == 0)
+            {
+                return BadRequest(new { mensaje = "El comentario o el Id del post no es válido." });
+            }
+
+            var post = await _context.Posts.FindAsync(comentario.IdPost);
             if (post == null)
             {
                 return NotFound(new { mensaje = "El post al que intentas comentar no existe." });
             }
 
-            comentario.IdPost = id;
             comentario.Fecha = DateTime.UtcNow;
-
             _context.Comentarios.Add(comentario);
 
             post.CommentCount += 1;
@@ -125,11 +146,13 @@ namespace ProjectTakeCareBack.Controllers
                     comentario.Fecha,
                     comentario.Likes,
                     comentario.Anonimo,
-                    comentario.IdUsuario
+                    comentario.IdUsuario,
+                    comentario.IdPost
                 },
                 totalComentarios = post.CommentCount
             });
         }
+
 
         private bool ComentarioExists(int id)
         {
