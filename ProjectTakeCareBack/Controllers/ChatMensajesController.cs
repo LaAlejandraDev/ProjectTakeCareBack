@@ -21,6 +21,24 @@ namespace ProjectTakeCareBack.Controllers
             _context = context;
         }
 
+        // GET: api/ChatMensajes/chat/5
+        [HttpGet("chat/{chatId}")]
+        public async Task<ActionResult<IEnumerable<ChatMensaje>>> GetMensajesByChatId(int chatId)
+        {
+            var mensajes = await _context.ChatMensajes
+                .Where(m => m.IdChat == chatId)
+                .OrderBy(m => m.Fecha)
+                .ToListAsync();
+
+            if (mensajes == null || mensajes.Count == 0)
+            {
+                return NotFound($"No se encontraron mensajes para el chat con ID {chatId}");
+            }
+
+            return Ok(mensajes);
+        }
+
+
         // GET: api/ChatMensajes
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ChatMensaje>>> GetChatMensajes()

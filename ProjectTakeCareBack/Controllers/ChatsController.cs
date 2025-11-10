@@ -21,6 +21,90 @@ namespace ProjectTakeCareBack.Controllers
             _context = context;
         }
 
+        [HttpGet("chatinfo/{id}")]
+        public async Task<ActionResult<ChatDTO>> GetChatById(int id)
+        {
+            var chat = await _context.Chats
+                .Include(c => c.Psicologo)
+                    .ThenInclude(p => p.Usuario)
+                .Include(c => c.Paciente)
+                    .ThenInclude(p => p.Usuario)
+                .Where(c => c.Id == id)
+                .Select(c => new ChatDTO
+                {
+                    Id = c.Id,
+                    IdPsicologo = c.IdPsicologo,
+                    IdPaciente = c.IdPaciente,
+                    CreadoEn = c.CreadoEn,
+                    UltimoMensajeEn = c.UltimoMensajeEn,
+
+                    NombrePsicologo = c.Psicologo.Usuario.Nombre,
+                    Especialidad = c.Psicologo.Especialidad,
+                    UniversidadEgreso = c.Psicologo.UniversidadEgreso,
+
+                    NombrePaciente = c.Paciente.Usuario.Nombre,
+                    ApellidosPaciente = c.Paciente.Usuario.ApellidoMaterno
+                })
+                .FirstOrDefaultAsync();
+
+            if (chat == null)
+            {
+                return NotFound($"No se encontró ningún chat con el ID {id}.");
+            }
+
+            return Ok(chat);
+        }
+
+
+        [HttpGet("lista")]
+        public async Task<ActionResult<IEnumerable<ChatDTO>>> GetChats(
+        [FromQuery] int? idPsicologo = null,
+        [FromQuery] int? idPaciente = null)
+        {
+            if (idPsicologo == null && idPaciente == null)
+            {
+                return BadRequest("Debes proporcionar el id del psicólogo o del paciente.");
+            }
+
+            var query = _context.Chats
+                .Include(c => c.Psicologo)
+                    .ThenInclude(p => p.Usuario)
+                .Include(c => c.Paciente)
+                    .ThenInclude(p => p.Usuario)
+                .AsQueryable();
+
+            if (idPsicologo != null)
+            {
+                query = query.Where(c => c.IdPsicologo == idPsicologo);
+            }
+            else if (idPaciente != null)
+            {
+                query = query.Where(c => c.IdPaciente == idPaciente);
+            }
+
+            var chats = await query
+                .OrderByDescending(c => c.UltimoMensajeEn)
+                .Select(c => new ChatDTO
+                {
+                    Id = c.Id,
+                    IdPsicologo = c.IdPsicologo,
+                    IdPaciente = c.IdPaciente,
+                    CreadoEn = c.CreadoEn,
+                    UltimoMensajeEn = c.UltimoMensajeEn,
+
+                    NombrePsicologo = c.Psicologo.Usuario.Nombre,
+                    Especialidad = c.Psicologo.Especialidad,
+                    UniversidadEgreso = c.Psicologo.UniversidadEgreso,
+
+                    NombrePaciente = c.Paciente.Usuario.Nombre,
+                    ApellidosPaciente = c.Paciente.Usuario.ApellidoMaterno
+                })
+                .ToListAsync();
+
+            return Ok(chats);
+        }
+
+
         // GET: api/Chats
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Chat>>> GetChats()
@@ -32,7 +116,11 @@ namespace ProjectTakeCareBack.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Chat>> GetChat(int id)
         {
-            var chat = await _context.Chats.FindAsync(id);
+
+            var chat = await _context.Chats
+               .Include(c => c.Psicologo)
+               .Include(c => c.Paciente)
+               .FirstOrDefaultAsync(c => c.Id == id);
 
             if (chat == null)
             {
@@ -78,10 +166,15 @@ namespace ProjectTakeCareBack.Controllers
         [HttpPost]
         public async Task<ActionResult<Chat>> PostChat(Chat chat)
         {
+            Console.WriteLine("Nuevo chat recibido:");
+            Console.WriteLine($"ID: {chat.Id}");
+            Console.WriteLine($"Psicologo ID: {chat.IdPsicologo}");
+            Console.WriteLine($"Paciente ID: {chat.IdPaciente}");
+            Console.WriteLine($"Creado el: {chat.CreadoEn}");
             _context.Chats.Add(chat);
             await _context.SaveChangesAsync();
-
             return CreatedAtAction("GetChat", new { id = chat.Id }, chat);
+
         }
 
         // DELETE: api/Chats/5
