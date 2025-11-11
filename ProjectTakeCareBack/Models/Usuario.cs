@@ -22,6 +22,9 @@ namespace ProjectTakeCareBack.Models
         public DateTime FechaRegistro { get; set; } = DateTime.UtcNow;
         public DateTime? UltimoAcceso { get; set; }
 
+        public TipoSuscripcion? Suscripcion { get; set; } = TipoSuscripcion.Gratis;
+
+
         [JsonIgnore]
         public Psicologo? Psicologo { get; set; }
 
