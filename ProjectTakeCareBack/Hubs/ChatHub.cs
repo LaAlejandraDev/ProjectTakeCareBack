@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using ProjectTakeCareBack.Models;
 
 namespace ProjectTakeCareBack.Hubs
 {
     public class ChatHub : Hub
     {
-        public async Task SendMessage(string user, string message)
+        public async Task SendMessage(ChatMensaje message)
         {
-            await Clients.All.SendAsync("ReceiveMessage", user, message);
+            await Clients.All.SendAsync("ReceiveMessage", message);
         }
 
         public override async Task OnConnectedAsync()

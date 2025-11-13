@@ -33,8 +33,8 @@ namespace ProjectTakeCareBack.Controllers
                 .Select(c => new ChatDTO
                 {
                     Id = c.Id,
-                    IdPsicologo = c.IdPsicologo,
-                    IdPaciente = c.IdPaciente,
+                    IdPsicologo = c.Psicologo.Usuario.Id,
+                    IdPaciente = c.Paciente.Usuario.Id,
                     CreadoEn = c.CreadoEn,
                     UltimoMensajeEn = c.UltimoMensajeEn,
 
