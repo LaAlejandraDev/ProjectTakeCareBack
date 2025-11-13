@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 using ProjectTakeCareBack.Data;
+using ProjectTakeCareBack.Enums;
 using ProjectTakeCareBack.Models;
 using System;
 using System.Collections.Generic;
@@ -147,6 +148,30 @@ namespace ProjectTakeCareBack.Controllers
 
             return Ok(new { mensaje = "Usuario desactivado correctamente." });
         }
+
+        [HttpPost("registro")]
+        public async Task<IActionResult> RegistrarPsicologo([FromBody] RegistroUserDTO modelo)
+        {
+            var usuario = new Usuario
+            {
+                Nombre = modelo.Nombre,
+                Correo = modelo.Correo,
+                Contrasena = BCrypt.Net.BCrypt.HashPassword(modelo.Contrasena),
+                Rol = RolUsuario.Psicologo,
+                Suscripcion = TipoSuscripcion.Gratis
+            };
+
+            usuario.Psicologo = new Psicologo
+            {
+                //Aquí queda vacío por el registro inicial
+            };
+
+            _context.Usuarios.Add(usuario);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Usuario registrado", usuario.Id });
+        }
+
 
         private bool UsuarioExists(int id)
         {
