@@ -27,3 +27,6 @@ Desktop.ini
 
 # Archivos de publicación
 publish/
+
+# Archivos de configuracion
+appsettings.json
