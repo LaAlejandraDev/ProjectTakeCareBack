@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ProjectTakeCareBack.Migrations
 {
     /// <inheritdoc />
-    public partial class InicialTakeCare : Migration
+    public partial class Inicial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -50,16 +50,18 @@ namespace ProjectTakeCareBack.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ApellidoPaterno = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Nombre = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ApellidoPaterno = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ApellidoMaterno = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Correo = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Telefono = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ContrasenaHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Genero = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Correo = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    Telefono = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Contrasena = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Rol = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Activo = table.Column<bool>(type: "bit", nullable: false),
                     FechaRegistro = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UltimoAcceso = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UltimoAcceso = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Suscripcion = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -95,9 +97,7 @@ namespace ProjectTakeCareBack.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    IdUsuario = table.Column<int>(type: "int", nullable: false),
-                    FechaNacimiento = table.Column<DateOnly>(type: "date", nullable: false),
-                    Genero = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IdUsuario = table.Column<int>(type: "int", nullable: true),
                     Ciudad = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     EstadoCivil = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Diagnostico = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -147,15 +147,15 @@ namespace ProjectTakeCareBack.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    IdUsuario = table.Column<int>(type: "int", nullable: false),
-                    CedulaProfesional = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Especialidad = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IdUsuario = table.Column<int>(type: "int", nullable: true),
+                    CedulaProfesional = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Especialidad = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Descripcion = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ExperienciaAnios = table.Column<int>(type: "int", nullable: false),
+                    ExperienciaAnios = table.Column<int>(type: "int", nullable: true),
                     UniversidadEgreso = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DireccionConsultorio = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CalificacionPromedio = table.Column<decimal>(type: "decimal(3,2)", precision: 3, scale: 2, nullable: false),
-                    TotalResenas = table.Column<int>(type: "int", nullable: false)
+                    CalificacionPromedio = table.Column<decimal>(type: "decimal(3,2)", precision: 3, scale: 2, nullable: true),
+                    TotalResenas = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -215,7 +215,7 @@ namespace ProjectTakeCareBack.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Comments",
+                name: "Comentarios",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -229,15 +229,15 @@ namespace ProjectTakeCareBack.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Comments", x => x.Id);
+                    table.PrimaryKey("PK_Comentarios", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Comments_Posts_IdPost",
+                        name: "FK_Comentarios_Posts_IdPost",
                         column: x => x.IdPost,
                         principalTable: "Posts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Comments_Usuarios_IdUsuario",
+                        name: "FK_Comentarios_Usuarios_IdUsuario",
                         column: x => x.IdUsuario,
                         principalTable: "Usuarios",
                         principalColumn: "Id",
@@ -253,8 +253,7 @@ namespace ProjectTakeCareBack.Migrations
                     IdPsicologo = table.Column<int>(type: "int", nullable: false),
                     IdPaciente = table.Column<int>(type: "int", nullable: false),
                     CreadoEn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UltimoMensajeEn = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    PsicologoId = table.Column<int>(type: "int", nullable: false)
+                    UltimoMensajeEn = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -266,8 +265,8 @@ namespace ProjectTakeCareBack.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Chats_Psicologos_PsicologoId",
-                        column: x => x.PsicologoId,
+                        name: "FK_Chats_Psicologos_IdPsicologo",
+                        column: x => x.IdPsicologo,
                         principalTable: "Psicologos",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -392,9 +391,9 @@ namespace ProjectTakeCareBack.Migrations
                 column: "IdPaciente");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Chats_PsicologoId",
+                name: "IX_Chats_IdPsicologo",
                 table: "Chats",
-                column: "PsicologoId");
+                column: "IdPsicologo");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Citas_IdPaciente",
@@ -407,13 +406,13 @@ namespace ProjectTakeCareBack.Migrations
                 column: "IdPsicologo");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comments_IdPost",
-                table: "Comments",
+                name: "IX_Comentarios_IdPost",
+                table: "Comentarios",
                 column: "IdPost");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comments_IdUsuario",
-                table: "Comments",
+                name: "IX_Comentarios_IdUsuario",
+                table: "Comentarios",
                 column: "IdUsuario");
 
             migrationBuilder.CreateIndex(
@@ -435,7 +434,8 @@ namespace ProjectTakeCareBack.Migrations
                 name: "IX_Pacientes_IdUsuario",
                 table: "Pacientes",
                 column: "IdUsuario",
-                unique: true);
+                unique: true,
+                filter: "[IdUsuario] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Posts_IdUsuario",
@@ -446,7 +446,8 @@ namespace ProjectTakeCareBack.Migrations
                 name: "IX_Psicologos_IdUsuario",
                 table: "Psicologos",
                 column: "IdUsuario",
-                unique: true);
+                unique: true,
+                filter: "[IdUsuario] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Recursos_IdPsicologo",
@@ -467,7 +468,8 @@ namespace ProjectTakeCareBack.Migrations
                 name: "IX_Usuarios_Correo",
                 table: "Usuarios",
                 column: "Correo",
-                unique: true);
+                unique: true,
+                filter: "[Correo] IS NOT NULL");
         }
 
         /// <inheritdoc />
@@ -483,7 +485,7 @@ namespace ProjectTakeCareBack.Migrations
                 name: "Citas");
 
             migrationBuilder.DropTable(
-                name: "Comments");
+                name: "Comentarios");
 
             migrationBuilder.DropTable(
                 name: "CrisisAlerts");

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
@@ -8,10 +9,12 @@ using ProjectTakeCareBack.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ProjectTakeCareBack.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UsuariosController : ControllerBase
@@ -170,6 +173,40 @@ namespace ProjectTakeCareBack.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Usuario registrado", usuario.Id });
+        }
+
+        //Obtener datos del usuario para el editperfil
+        [HttpGet("profile")]
+        [Authorize]
+        public async Task<IActionResult> GetProfile()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userIdClaim == null)
+                return Unauthorized(new { mensaje = "Token inválido" });
+
+            int userId = int.Parse(userIdClaim);
+
+            var usuario = await _context.Usuarios.FindAsync(userId);
+
+            if (usuario == null)
+                return NotFound(new { mensaje = "Usuario no encontrado" });
+
+            return Ok(new
+            {
+                usuario.Id,
+                usuario.Nombre,
+                usuario.ApellidoPaterno,
+                usuario.ApellidoMaterno,
+                usuario.Genero,
+                usuario.Correo,
+                usuario.Telefono,
+                usuario.Rol,
+                usuario.Activo,
+                usuario.FechaRegistro,
+                usuario.UltimoAcceso,
+                usuario.Suscripcion
+            });
         }
 
 
