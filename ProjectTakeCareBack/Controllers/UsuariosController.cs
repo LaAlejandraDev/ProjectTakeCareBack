@@ -33,6 +33,44 @@ namespace ProjectTakeCareBack.Controllers
             return await _context.Usuarios.ToListAsync();
         }
 
+        [HttpGet("info/{id}")]
+        public async Task<IActionResult> GetUserInformation(int id)
+        {
+            var usuario = await _context.Usuarios
+                .Include(u => u.Psicologo)
+                .Include(u => u.Paciente)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (usuario == null)
+            {
+                return NotFound(new { mensaje = "Usuario no encontrado." });
+            }
+
+            var dto = new UserInformationDTO
+            {
+                Id = usuario.Id,
+                Nombre = usuario.Nombre,
+                ApellidoPaterno = usuario.ApellidoPaterno,
+                ApellidoMaterno = usuario.ApellidoMaterno,
+                Genero = usuario.Genero,
+                Correo = usuario.Correo,
+                Telefono = usuario.Telefono,
+                Rol = usuario.Rol
+            };
+
+            if (usuario.Rol == RolUsuario.Psicologo)
+            {
+                dto.Psicologo = usuario.Psicologo;
+            }
+            else if (usuario.Rol == RolUsuario.Paciente)
+            {
+                dto.Paciente = usuario.Paciente;
+            }
+
+            return Ok(dto);
+        }
+
+
         // GET: api/Usuarios/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Usuario>> GetUsuario(int id)
