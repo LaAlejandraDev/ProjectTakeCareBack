@@ -42,6 +42,46 @@ namespace ProjectTakeCareBack.Controllers
             return psicologo;
         }
 
+        [HttpGet("usuario/{idUsuario}")]
+        public async Task<ActionResult<object>> GetPsicologoByUsuario(int idUsuario)
+        {
+            var psicologo = await _context.Psicologos
+                .Include(p => p.Usuario) // Incluye la relación con Usuario
+                .FirstOrDefaultAsync(p => p.IdUsuario == idUsuario);
+
+            if (psicologo == null)
+            {
+                return NotFound(new { mensaje = "No se encontró ningún psicólogo asociado a este usuario." });
+            }
+
+            // Devuelve el paciente con su información de usuario asociada
+            return Ok(new
+            {
+                psicologo.Id,
+                psicologo.CedulaProfesional,
+                psicologo.Especialidad,
+                psicologo.Descripcion,
+                psicologo.ExperienciaAnios,
+                psicologo.UniversidadEgreso,
+                psicologo.DireccionConsultorio,
+                psicologo.CalificacionPromedio,
+                psicologo.TotalResenas,
+                psicologo.IdUsuario,
+                Usuario = new
+                {
+                    psicologo.Usuario.Id,
+                    psicologo.Usuario.Nombre,
+                    psicologo.Usuario.ApellidoPaterno,
+                    psicologo.Usuario.ApellidoMaterno,
+                    psicologo.Usuario.Correo,
+                    psicologo.Usuario.Genero,
+                    psicologo.Usuario.Telefono,
+                    psicologo.Usuario.Rol,
+                    psicologo.Usuario.Activo
+                }
+            });
+        }
+
         // PUT: api/Psicologoes/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
@@ -8,10 +9,12 @@ using ProjectTakeCareBack.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ProjectTakeCareBack.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UsuariosController : ControllerBase
@@ -29,6 +32,44 @@ namespace ProjectTakeCareBack.Controllers
         {
             return await _context.Usuarios.ToListAsync();
         }
+
+        [HttpGet("info/{id}")]
+        public async Task<IActionResult> GetUserInformation(int id)
+        {
+            var usuario = await _context.Usuarios
+                .Include(u => u.Psicologo)
+                .Include(u => u.Paciente)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (usuario == null)
+            {
+                return NotFound(new { mensaje = "Usuario no encontrado." });
+            }
+
+            var dto = new UserInformationDTO
+            {
+                Id = usuario.Id,
+                Nombre = usuario.Nombre,
+                ApellidoPaterno = usuario.ApellidoPaterno,
+                ApellidoMaterno = usuario.ApellidoMaterno,
+                Genero = usuario.Genero,
+                Correo = usuario.Correo,
+                Telefono = usuario.Telefono,
+                Rol = usuario.Rol
+            };
+
+            if (usuario.Rol == RolUsuario.Psicologo)
+            {
+                dto.Psicologo = usuario.Psicologo;
+            }
+            else if (usuario.Rol == RolUsuario.Paciente)
+            {
+                dto.Paciente = usuario.Paciente;
+            }
+
+            return Ok(dto);
+        }
+
 
         // GET: api/Usuarios/5
         [HttpGet("{id}")]
@@ -170,6 +211,40 @@ namespace ProjectTakeCareBack.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Usuario registrado", usuario.Id });
+        }
+
+        //Obtener datos del usuario para el editperfil
+        [HttpGet("profile")]
+        [Authorize]
+        public async Task<IActionResult> GetProfile()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userIdClaim == null)
+                return Unauthorized(new { mensaje = "Token inválido" });
+
+            int userId = int.Parse(userIdClaim);
+
+            var usuario = await _context.Usuarios.FindAsync(userId);
+
+            if (usuario == null)
+                return NotFound(new { mensaje = "Usuario no encontrado" });
+
+            return Ok(new
+            {
+                usuario.Id,
+                usuario.Nombre,
+                usuario.ApellidoPaterno,
+                usuario.ApellidoMaterno,
+                usuario.Genero,
+                usuario.Correo,
+                usuario.Telefono,
+                usuario.Rol,
+                usuario.Activo,
+                usuario.FechaRegistro,
+                usuario.UltimoAcceso,
+                usuario.Suscripcion
+            });
         }
 
 
