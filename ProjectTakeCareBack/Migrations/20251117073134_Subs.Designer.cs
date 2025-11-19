@@ -12,8 +12,8 @@ using ProjectTakeCareBack.Data;
 namespace ProjectTakeCareBack.Migrations
 {
     [DbContext(typeof(TakeCareContext))]
-    [Migration("20251028235248_NuevaModificacionDeModeloUusuarios")]
-    partial class NuevaModificacionDeModeloUusuarios
+    [Migration("20251117073134_Subs")]
+    partial class Subs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -73,9 +73,6 @@ namespace ProjectTakeCareBack.Migrations
                     b.Property<int>("IdPsicologo")
                         .HasColumnType("int");
 
-                    b.Property<int>("PsicologoId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("UltimoMensajeEn")
                         .HasColumnType("datetime2");
 
@@ -83,7 +80,7 @@ namespace ProjectTakeCareBack.Migrations
 
                     b.HasIndex("IdPaciente");
 
-                    b.HasIndex("PsicologoId");
+                    b.HasIndex("IdPsicologo");
 
                     b.ToTable("Chats");
                 });
@@ -314,20 +311,14 @@ namespace ProjectTakeCareBack.Migrations
                     b.Property<string>("EstadoCivil")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateOnly>("FechaNacimiento")
-                        .HasColumnType("date");
-
-                    b.Property<string>("Genero")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("IdUsuario")
+                    b.Property<int?>("IdUsuario")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("IdUsuario")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[IdUsuario] IS NOT NULL");
 
                     b.ToTable("Pacientes");
                 });
@@ -409,12 +400,11 @@ namespace ProjectTakeCareBack.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("CalificacionPromedio")
+                    b.Property<decimal?>("CalificacionPromedio")
                         .HasPrecision(3, 2)
                         .HasColumnType("decimal(3,2)");
 
                     b.Property<string>("CedulaProfesional")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Descripcion")
@@ -424,16 +414,15 @@ namespace ProjectTakeCareBack.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Especialidad")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ExperienciaAnios")
+                    b.Property<int?>("ExperienciaAnios")
                         .HasColumnType("int");
 
-                    b.Property<int>("IdUsuario")
+                    b.Property<int?>("IdUsuario")
                         .HasColumnType("int");
 
-                    b.Property<int>("TotalResenas")
+                    b.Property<int?>("TotalResenas")
                         .HasColumnType("int");
 
                     b.Property<string>("UniversidadEgreso")
@@ -442,7 +431,8 @@ namespace ProjectTakeCareBack.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("IdUsuario")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[IdUsuario] IS NOT NULL");
 
                     b.ToTable("Psicologos");
                 });
@@ -531,30 +521,31 @@ namespace ProjectTakeCareBack.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ApellidoPaterno")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Contrasena")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Correo")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("FechaRegistro")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Genero")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Nombre")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Rol")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("Suscripcion")
+                        .HasColumnType("int");
+
                     b.Property<string>("Telefono")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UltimoAcceso")
@@ -563,7 +554,8 @@ namespace ProjectTakeCareBack.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Correo")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[Correo] IS NOT NULL");
 
                     b.ToTable("Usuarios");
                 });
@@ -578,7 +570,7 @@ namespace ProjectTakeCareBack.Migrations
 
                     b.HasOne("ProjectTakeCareBack.Models.Psicologo", "Psicologo")
                         .WithMany()
-                        .HasForeignKey("PsicologoId")
+                        .HasForeignKey("IdPsicologo")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -674,8 +666,7 @@ namespace ProjectTakeCareBack.Migrations
                     b.HasOne("ProjectTakeCareBack.Models.Usuario", "Usuario")
                         .WithOne("Paciente")
                         .HasForeignKey("ProjectTakeCareBack.Models.Paciente", "IdUsuario")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Usuario");
                 });
@@ -696,8 +687,7 @@ namespace ProjectTakeCareBack.Migrations
                     b.HasOne("ProjectTakeCareBack.Models.Usuario", "Usuario")
                         .WithOne("Psicologo")
                         .HasForeignKey("ProjectTakeCareBack.Models.Psicologo", "IdUsuario")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Usuario");
                 });

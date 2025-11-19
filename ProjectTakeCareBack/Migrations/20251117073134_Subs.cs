@@ -5,7 +5,7 @@
 namespace ProjectTakeCareBack.Migrations
 {
     /// <inheritdoc />
-    public partial class ActivoChat : Migration
+    public partial class Subs : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

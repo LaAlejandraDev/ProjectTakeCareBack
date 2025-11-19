@@ -27,5 +27,11 @@ Desktop.ini
 
 # Archivos de publicación
 publish/
+<<<<<<< HEAD
 /ProjectTakeCareBack/Migrations
 /ProjectTakeCareBack/Models
+=======
+
+# Archivos de configuracion
+appsettings.json
+>>>>>>> 97f6d1711034601cab571f3c77659b4848ddcdfe
