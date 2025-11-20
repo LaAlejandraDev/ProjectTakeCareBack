@@ -12,8 +12,8 @@ using ProjectTakeCareBack.Data;
 namespace ProjectTakeCareBack.Migrations
 {
     [DbContext(typeof(TakeCareContext))]
-    [Migration("20251110015026_ChatDTO")]
-    partial class ChatDTO
+    [Migration("20251114235651_Inicial")]
+    partial class Inicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -541,6 +541,9 @@ namespace ProjectTakeCareBack.Migrations
                     b.Property<string>("Rol")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("Suscripcion")
+                        .HasColumnType("int");
 
                     b.Property<string>("Telefono")
                         .HasColumnType("nvarchar(max)");
