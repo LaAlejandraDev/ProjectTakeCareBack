@@ -10,6 +10,11 @@ namespace ProjectTakeCareBack.Hubs
             await Clients.All.SendAsync("ReceiveMessage", message);
         }
 
+        public async Task NotifyNewDateToUser(string userId, Cita cita)
+        {
+            await Clients.User(userId).SendAsync("NewDate", cita);
+        }
+
         public override async Task OnConnectedAsync()
         {
             await Clients.All.SendAsync("UserConnected", Context.ConnectionId);

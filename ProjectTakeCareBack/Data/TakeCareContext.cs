@@ -135,5 +135,6 @@ namespace ProjectTakeCareBack.Data
             modelBuilder.Entity<Cita>()
                 .HasCheckConstraint("CK_Cita_Fechas", "[FechaInicio] < [FechaFin]");
         }
+        public DbSet<ProjectTakeCareBack.Models.PsicologoDisponibilidad> PsicologoDisponibilidad { get; set; } = default!;
     }
 }

@@ -25,6 +25,9 @@ namespace ProjectTakeCareBack.Models
         public Usuario Usuario { get; set; } = null!;
 
         [JsonIgnore]
+        public List<PsicologoDisponibilidad> Disponibilidad { get; set; } = new();
+
+        [JsonIgnore]
         public ICollection<Cita>? Citas { get; set; }
 
         [JsonIgnore]

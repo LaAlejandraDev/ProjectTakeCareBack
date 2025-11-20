@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
 using ProjectTakeCareBack.Data;
 using ProjectTakeCareBack.Models;
+using ProjectTakeCareBack.Hubs;
 
 namespace ProjectTakeCareBack.Controllers
 {
@@ -15,10 +12,12 @@ namespace ProjectTakeCareBack.Controllers
     public class CitasController : ControllerBase
     {
         private readonly TakeCareContext _context;
+        private readonly IHubContext<ChatHub> _hubContext;
 
-        public CitasController(TakeCareContext context)
+        public CitasController(TakeCareContext context, IHubContext<ChatHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         // GET: api/Citas
@@ -42,46 +41,110 @@ namespace ProjectTakeCareBack.Controllers
             return cita;
         }
 
-        // PUT: api/Citas/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCita(int id, Cita cita)
+        // GET: api/Citas/psicologo/1
+        [HttpGet("psicologo/{idPsicologo}")]
+        public async Task<ActionResult<IEnumerable<Cita>>> GetCitasPorPsicologo(int idPsicologo)
         {
-            if (id != cita.Id)
-            {
-                return BadRequest();
-            }
+            if (idPsicologo <= 0)
+                return BadRequest("Id de psicólogo inválido.");
 
-            _context.Entry(cita).State = EntityState.Modified;
+            var citas = await _context.Citas
+                .Where(c => c.IdPsicologo == idPsicologo)
+                .OrderBy(c => c.FechaInicio)
+                .ToListAsync();
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CitaExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            if (citas == null || citas.Count == 0)
+                return NotFound("El psicólogo no tiene citas registradas.");
 
-            return NoContent();
+            return Ok(citas);
         }
 
         // POST: api/Citas
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Cita>> PostCita(Cita cita)
+        public async Task<ActionResult<Cita>> PostCita([FromBody] Cita cita)
         {
-            _context.Citas.Add(cita);
-            await _context.SaveChangesAsync();
+            if (cita == null)
+                return BadRequest("Payload inválido.");
 
-            return CreatedAtAction("GetCita", new { id = cita.Id }, cita);
+            if (cita.IdDisponibilidad <= 0)
+                return BadRequest("IdDisponibilidad inválido.");
+
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var disponibilidad = await _context.PsicologoDisponibilidad
+                        .FromSqlRaw("SELECT * FROM PsicologoDisponibilidad WITH (UPDLOCK, ROWLOCK) WHERE Id = {0}", cita.IdDisponibilidad)
+                        .AsTracking()
+                        .FirstOrDefaultAsync();
+
+                    if (disponibilidad == null)
+                    {
+                        await transaction.RollbackAsync();
+                        return BadRequest("La disponibilidad indicada no existe.");
+                    }
+
+                    if (disponibilidad.IdPsicologo != cita.IdPsicologo)
+                    {
+                        await transaction.RollbackAsync();
+                        return BadRequest("La disponibilidad no corresponde al psicólogo indicado.");
+                    }
+
+                    var diaObjetivo = disponibilidad.Fecha.Date;
+
+                    // REGLA: Un paciente solo puede tener 1 cita ese día
+                    bool pacienteTieneCita = await _context.Citas
+                        .AnyAsync(c => c.IdPaciente == cita.IdPaciente && c.FechaInicio.Date == diaObjetivo);
+
+                    if (pacienteTieneCita)
+                    {
+                        await transaction.RollbackAsync();
+                        return BadRequest("El paciente ya tiene una cita este día.");
+                    }
+
+                    // BLOQUES DE HORARIO AUTOMÁTICOS
+                    int citasPrevias = disponibilidad.CitasAgendadas;
+
+                    if (citasPrevias >= 4)
+                    {
+                        await transaction.RollbackAsync();
+                        return BadRequest("No hay cupos disponibles para este día.");
+                    }
+
+                    DateTime fechaBase = disponibilidad.Fecha.Date;
+                    TimeSpan horaInicioBase = new TimeSpan(7, 0, 0); // 7am
+                    TimeSpan duracion = new TimeSpan(2, 0, 0);      // 2h por cita
+
+                    var fechaInicio = fechaBase + horaInicioBase + TimeSpan.FromTicks(duracion.Ticks * citasPrevias);
+                    var fechaFin = fechaInicio + duracion;
+
+                    cita.FechaInicio = fechaInicio;
+                    cita.FechaFin = fechaFin;
+
+                    _context.Citas.Add(cita);
+
+                    disponibilidad.CitasAgendadas += 1;
+                    _context.PsicologoDisponibilidad.Update(disponibilidad);
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    // 🔥 ENVIAR NOTIFICACIÓN EN TIEMPO REAL
+                    await _hubContext.Clients.All.SendAsync("NewDate", cita);
+
+                    return CreatedAtAction("GetCita", new { id = cita.Id }, cita);
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    await transaction.RollbackAsync();
+                    return StatusCode(StatusCodes.Status409Conflict, "Conflicto de concurrencia, intenta de nuevo.");
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al registrar cita.");
+                }
+            }
         }
 
         // DELETE: api/Citas/5
