@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 
 namespace ProjectTakeCareBack.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UsuariosController : ControllerBase
@@ -215,7 +214,6 @@ namespace ProjectTakeCareBack.Controllers
 
         //Obtener datos del usuario para el editperfil
         [HttpGet("profile")]
-        [Authorize]
         public async Task<IActionResult> GetProfile()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
