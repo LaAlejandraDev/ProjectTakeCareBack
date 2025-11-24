@@ -21,6 +21,23 @@ namespace ProjectTakeCareBack.Controllers
             _context = context;
         }
 
+        [HttpGet("psychologist/{psychologistId}")]
+        public async Task<IActionResult> GetDatesByPsychologist(int psychologistId)
+        {
+            try
+            {
+                var citas = await _context.Citas
+                    .Where(c => c.IdPsicologo == psychologistId)
+                    .ToListAsync();
+
+                return Ok(citas);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error al obtener las citas", error = ex.Message });
+            }
+        }
+
         // GET: api/PsicologoDisponibilidades/psicologo/5
         [HttpGet("psicologo/{idPsicologo}")]
         public async Task<ActionResult<IEnumerable<PsicologoDisponibilidad>>>
