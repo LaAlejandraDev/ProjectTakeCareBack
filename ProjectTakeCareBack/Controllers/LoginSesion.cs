@@ -93,6 +93,7 @@ namespace ProjectTakeCareBack.Controllers
         public async Task<IActionResult> Login([FromBody] UsuarioDTO login)
         {
             var usuario = await _context.Usuarios
+                .Include(u => u.Psicologo)
                .FirstOrDefaultAsync(u => u.Correo == login.Correo);
 
             if (usuario == null)
@@ -107,6 +108,12 @@ namespace ProjectTakeCareBack.Controllers
             _context.Usuarios.Update(usuario);
             await _context.SaveChangesAsync();
 
+
+            string estatusPsicologo = null;
+            if (usuario.Rol == ProjectTakeCareBack.Enums.RolUsuario.Psicologo)
+            {
+                estatusPsicologo = usuario.Psicologo?.Estatus.ToString() ?? "Pendiente";
+            }
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
@@ -136,7 +143,8 @@ namespace ProjectTakeCareBack.Controllers
                     usuario.Correo,
                     usuario.Rol,
                     UltimoAcceso = usuario.UltimoAcceso
-                }
+                },
+                estatusPsicologo
             });
         }
     }

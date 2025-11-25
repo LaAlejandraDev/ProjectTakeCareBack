@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectTakeCareBack.Data;
+using ProjectTakeCareBack.Enums;
 using ProjectTakeCareBack.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ProjectTakeCareBack.Controllers
 {
@@ -200,6 +201,135 @@ namespace ProjectTakeCareBack.Controllers
 
             return NoContent();
         }
+
+        // POST: api/Psicologos/postUsuarioPsicologo
+        [HttpPost("postUsuarioPsicologo")]
+        public async Task<ActionResult<Psicologo>> PostPsicologoSimple([FromBody] Psicologo psicologo)
+        {
+            if (psicologo.IdUsuario == 0)
+            {
+                return BadRequest(new { mensaje = "El IdUsuario es requerido para crear un psicólogo." });
+            }
+
+            var nuevoPsicologo = new Psicologo
+            {
+                IdUsuario = psicologo.IdUsuario,
+                CedulaProfesional = psicologo.CedulaProfesional ?? "",
+                Especialidad = psicologo.Especialidad ?? "",
+                Descripcion = psicologo.Descripcion ?? "",
+                ExperienciaAnios = psicologo.ExperienciaAnios,
+                UniversidadEgreso = psicologo.UniversidadEgreso ?? "",
+                DireccionConsultorio = psicologo.DireccionConsultorio ?? "",
+                CalificacionPromedio = psicologo.CalificacionPromedio,
+                TotalResenas = psicologo.TotalResenas,
+
+                Plan = psicologo.Plan,
+                Estatus = psicologo.Estatus
+            };
+
+
+
+            _context.Psicologos.Add(nuevoPsicologo);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetPsicologo", new { id = nuevoPsicologo.Id }, nuevoPsicologo);
+        }
+
+        //Obtenemos la lista de los psicólogos que están pendientes y que necesitan aprobación del admin
+        [HttpGet("pendientes")]
+        public async Task<IActionResult> GetPendientes()
+        {
+            var pendientes = await _context.Psicologos
+                .Where(p => p.Estatus == EstatusAprobacion.Pendiente)
+                .Include(p => p.Usuario)
+                .ToListAsync();
+
+            return Ok(pendientes);
+        }
+
+        //El admin aprueba la suscripción del psicólogo
+        [HttpPut("aprobar/{id}")]
+        public async Task<IActionResult> AprobarPsicologo(int id)
+        {
+            var psicologo = await _context.Psicologos.FindAsync(id);
+
+            if (psicologo == null)
+                return NotFound();
+
+            psicologo.Estatus = EstatusAprobacion.Aprobado;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { mensaje = "Psicólogo aprobado." });
+        }
+
+        //El admin rechaza la suscrippción del psicólogo
+        [HttpPut("rechazar/{id}")]
+        public async Task<IActionResult> RechazarPsicologo(int id)
+        {
+            var psicologo = await _context.Psicologos.FindAsync(id);
+
+            if (psicologo == null)
+                return NotFound();
+
+            psicologo.Estatus = EstatusAprobacion.Rechazado;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { mensaje = "Psicólogo rechazado." });
+        }
+
+        //Permite cambiar el plan de suscripción de un psicólogo que ya existe
+        [HttpPut("cambiarPlan/{id}")]
+        public async Task<IActionResult> CambiarPlan(int id, [FromBody] PlanSuscripcion plan)
+        {
+            var psicologo = await _context.Psicologos.FindAsync(id);
+
+            if (psicologo == null)
+                return NotFound();
+
+            psicologo.Plan = plan;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { mensaje = "Plan actualizado." });
+        }
+
+        //Devuelve el estatus y el plan de psicólogi basado en el idUsuario
+        [HttpGet("estado/{idUsuario}")]
+        public async Task<IActionResult> Estado(int idUsuario)
+        {
+            var psicologo = await _context.Psicologos
+                .Where(p => p.IdUsuario == idUsuario)
+                .FirstOrDefaultAsync();
+
+            if (psicologo == null)
+                return NotFound("Psicólogo no encontrado.");
+
+            return Ok(new
+            {
+                estatus = psicologo.Estatus,
+                plan = psicologo.Plan
+            });
+        }
+
+        //Permite que un psicólogo solicite una suscripción a un plan
+        [HttpPost("{idPsicologo}/suscribirse")]
+        public async Task<IActionResult> Suscribirse(int idPsicologo, [FromBody] PlanSuscripcion plan)
+        {
+            var psicologo = await _context.Psicologos.FindAsync(idPsicologo);
+
+            if (psicologo == null)
+                return NotFound("Psicólogo no encontrado.");
+
+            psicologo.Plan = plan;
+            psicologo.Estatus = EstatusAprobacion.Pendiente; // requiere aprobación
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { mensaje = "Plan solicitado. En espera de aprobación." });
+        }
+
+
+
+
 
         private bool PsicologoExists(int id)
         {

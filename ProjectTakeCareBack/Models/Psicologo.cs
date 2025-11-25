@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProjectTakeCareBack.Enums;
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
@@ -21,8 +22,9 @@ namespace ProjectTakeCareBack.Models
         public decimal? CalificacionPromedio { get; set; } = 0;
         public int? TotalResenas { get; set; } = 0;
 
-
-        public Usuario Usuario { get; set; } = null!;
+        public PlanSuscripcion Plan { get; set; } = PlanSuscripcion.Gratis;
+        public EstatusAprobacion Estatus { get; set; } = EstatusAprobacion.Pendiente;
+        public Usuario? Usuario { get; set; } = null!;
 
         [JsonIgnore]
         public List<Valoracion> Valoraciones { get; set; } = new();

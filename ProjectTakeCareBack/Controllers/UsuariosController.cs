@@ -2,27 +2,35 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 using ProjectTakeCareBack.Data;
 using ProjectTakeCareBack.Enums;
 using ProjectTakeCareBack.Models;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace ProjectTakeCareBack.Controllers
 {
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UsuariosController : ControllerBase
     {
         private readonly TakeCareContext _context;
+        private readonly IConfiguration _configuration;
 
-        public UsuariosController(TakeCareContext context)
+
+        public UsuariosController(TakeCareContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // GET: api/Usuarios
@@ -198,19 +206,57 @@ namespace ProjectTakeCareBack.Controllers
                 Correo = modelo.Correo,
                 Contrasena = BCrypt.Net.BCrypt.HashPassword(modelo.Contrasena),
                 Rol = RolUsuario.Psicologo,
-                Suscripcion = TipoSuscripcion.Gratis
+                FechaRegistro = DateTime.UtcNow,
+                UltimoAcceso = DateTime.UtcNow,
+                Activo = true
             };
 
             usuario.Psicologo = new Psicologo
             {
-                //Aquí queda vacío por el registro inicial
+                Plan = PlanSuscripcion.Gratis,
+                Estatus = EstatusAprobacion.Aprobado
             };
 
             _context.Usuarios.Add(usuario);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Usuario registrado", usuario.Id });
+            var claims = new[]
+            {
+                  new Claim("idUsuario", usuario.Id.ToString()),
+        new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
+        new Claim(ClaimTypes.Name, usuario.Nombre),
+        new Claim(ClaimTypes.Email, usuario.Correo),
+        new Claim(ClaimTypes.Role, usuario.Rol.ToString())
+    };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(2),
+                signingCredentials: creds
+            );
+
+            string tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return Ok(new
+            {
+                mensaje = "Usuario registrado",
+                usuario = new
+                {
+                    usuario.Id,
+                    usuario.Nombre,
+                    usuario.Correo,
+                    usuario.Rol
+                },
+                idPsicologo = usuario.Psicologo.Id,
+                token = tokenString
+            });
         }
+
 
         //Obtener datos del usuario para el editperfil
         [HttpGet("profile")]
@@ -242,6 +288,39 @@ namespace ProjectTakeCareBack.Controllers
                 usuario.FechaRegistro,
                 usuario.UltimoAcceso,
                 usuario.Suscripcion
+            });
+        }
+
+
+        [HttpGet("dashboardAdmin")]
+        public async Task<ActionResult<object>> GetDashboard()
+        {
+            var totalUsuarios = await _context.Usuarios.CountAsync();
+            var usuariosActivos = await _context.Usuarios.CountAsync(u => u.Activo);
+            var pacientes = await _context.Pacientes.CountAsync();
+            var psicologos = await _context.Psicologos.CountAsync();
+            var posts = await _context.Posts.CountAsync();
+            var comentarios = await _context.Comentarios.CountAsync();
+
+            var rolesDistribucion = await _context.Usuarios
+                .GroupBy(u => u.Rol)
+                .Select(g => new { Rol = g.Key, Cantidad = g.Count() })
+                .ToListAsync();
+
+            var comentariosPorPost = await _context.Posts
+                .Select(p => new { p.Titulo, Count = p.Comentarios.Count })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                totalUsuarios,
+                usuariosActivos,
+                pacientes,
+                psicologos,
+                posts,
+                comentarios,
+                rolesDistribucion,
+                comentariosPorPost
             });
         }
 

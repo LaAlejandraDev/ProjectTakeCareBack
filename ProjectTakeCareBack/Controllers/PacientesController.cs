@@ -192,6 +192,32 @@ namespace ProjectTakeCareBack.Controllers
             return NoContent();
         }
 
+        // POST: api/Pacientes/postUsuarioPaciente
+        [HttpPost("postUsuarioPaciente")]
+        public async Task<ActionResult<Paciente>> PostPacienteSimple([FromBody] Paciente paciente)
+        {
+            if (paciente.IdUsuario == 0)
+            {
+                return BadRequest(new { mensaje = "El IdUsuario es requerido para crear un paciente." });
+            }
+
+            var nuevoPaciente = new Paciente
+            {
+                IdUsuario = paciente.IdUsuario,
+                Ciudad = paciente.Ciudad ?? "",
+                EstadoCivil = paciente.EstadoCivil ?? "",
+                Diagnostico = paciente.Diagnostico ?? "",
+                AntecedentesMedicos = paciente.AntecedentesMedicos ?? "",
+                ContactoEmergencia = paciente.ContactoEmergencia ?? ""
+            };
+
+            _context.Pacientes.Add(nuevoPaciente);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetPaciente", new { id = nuevoPaciente.Id }, nuevoPaciente);
+        }
+
+
         private bool PacienteExists(int id)
         {
             return _context.Pacientes.Any(e => e.Id == id);
