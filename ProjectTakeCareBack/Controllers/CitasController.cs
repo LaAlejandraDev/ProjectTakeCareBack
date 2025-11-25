@@ -59,6 +59,24 @@ namespace ProjectTakeCareBack.Controllers
             return Ok(citas);
         }
 
+        // GET: api/Citas/paciente/1
+        [HttpGet("paciente/{idPaciente}")]
+        public async Task<ActionResult<IEnumerable<Cita>>> GetCitasPorPaciente(int idPaciente)
+        {
+            if (idPaciente <= 0)
+                return BadRequest("Id de paciente inválido.");
+
+            var citas = await _context.Citas
+                .Where(c => c.IdPaciente == idPaciente)
+                .OrderBy(c => c.FechaInicio)
+                .ToListAsync();
+
+            if (citas == null || citas.Count == 0)
+                return NotFound("El paciente no tiene citas registradas.");
+
+            return Ok(citas);
+        }
+
         // POST: api/Citas
         [HttpPost]
         public async Task<ActionResult<Cita>> PostCita([FromBody] Cita cita)
@@ -129,7 +147,6 @@ namespace ProjectTakeCareBack.Controllers
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
-                    // 🔥 ENVIAR NOTIFICACIÓN EN TIEMPO REAL
                     await _hubContext.Clients.All.SendAsync("NewDate", cita);
 
                     return CreatedAtAction("GetCita", new { id = cita.Id }, cita);

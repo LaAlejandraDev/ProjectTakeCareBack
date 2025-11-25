@@ -5,7 +5,7 @@ namespace ProjectTakeCareBack.Hubs
 {
     public class ChatHub : Hub
     {
-        public async Task SendMessage(ChatMensaje message)
+        public async Task SendMessage(string userId, ChatMensaje message)
         {
             await Clients.All.SendAsync("ReceiveMessage", message);
         }

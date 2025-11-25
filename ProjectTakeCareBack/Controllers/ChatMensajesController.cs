@@ -1,12 +1,14 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using ProjectTakeCareBack.Data;
+using ProjectTakeCareBack.Hubs;
+using ProjectTakeCareBack.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ProjectTakeCareBack.Data;
-using ProjectTakeCareBack.Models;
 
 namespace ProjectTakeCareBack.Controllers
 {
@@ -15,10 +17,12 @@ namespace ProjectTakeCareBack.Controllers
     public class ChatMensajesController : ControllerBase
     {
         private readonly TakeCareContext _context;
+        private readonly IHubContext<ChatHub> _hubContext;
 
-        public ChatMensajesController(TakeCareContext context)
+        public ChatMensajesController(TakeCareContext context, IHubContext<ChatHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         // GET: api/ChatMensajes/chat/5
@@ -98,6 +102,8 @@ namespace ProjectTakeCareBack.Controllers
         {
             _context.ChatMensajes.Add(chatMensaje);
             await _context.SaveChangesAsync();
+
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", chatMensaje);
 
             return CreatedAtAction("GetChatMensaje", new { id = chatMensaje.Id }, chatMensaje);
         }

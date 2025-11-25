@@ -136,5 +136,6 @@ namespace ProjectTakeCareBack.Data
                 .HasCheckConstraint("CK_Cita_Fechas", "[FechaInicio] < [FechaFin]");
         }
         public DbSet<ProjectTakeCareBack.Models.PsicologoDisponibilidad> PsicologoDisponibilidad { get; set; } = default!;
+        public DbSet<ProjectTakeCareBack.Models.Valoracion> Valoracion { get; set; } = default!;
     }
 }

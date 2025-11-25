@@ -25,7 +25,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddHttpClient();
 builder.Services.AddSignalR();
 
 
@@ -46,7 +46,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -63,6 +62,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
 
 app.MapHub<ChatHub>("/chatHub");
 
