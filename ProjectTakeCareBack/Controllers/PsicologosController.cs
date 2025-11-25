@@ -221,8 +221,13 @@ namespace ProjectTakeCareBack.Controllers
                 UniversidadEgreso = psicologo.UniversidadEgreso ?? "",
                 DireccionConsultorio = psicologo.DireccionConsultorio ?? "",
                 CalificacionPromedio = psicologo.CalificacionPromedio,
-                TotalResenas = psicologo.TotalResenas
+                TotalResenas = psicologo.TotalResenas,
+
+                Plan = psicologo.Plan,
+                Estatus = psicologo.Estatus
             };
+
+
 
             _context.Psicologos.Add(nuevoPsicologo);
             await _context.SaveChangesAsync();

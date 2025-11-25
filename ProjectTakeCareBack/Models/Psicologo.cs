@@ -24,7 +24,7 @@ namespace ProjectTakeCareBack.Models
 
         public PlanSuscripcion Plan { get; set; } = PlanSuscripcion.Gratis;
         public EstatusAprobacion Estatus { get; set; } = EstatusAprobacion.Pendiente;
-        public Usuario Usuario { get; set; } = null!;
+        public Usuario? Usuario { get; set; } = null!;
 
         [JsonIgnore]
         public List<PsicologoDisponibilidad> Disponibilidad { get; set; } = new();

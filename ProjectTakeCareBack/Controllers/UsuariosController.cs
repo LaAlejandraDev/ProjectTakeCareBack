@@ -292,6 +292,39 @@ namespace ProjectTakeCareBack.Controllers
         }
 
 
+        [HttpGet("dashboardAdmin")]
+        public async Task<ActionResult<object>> GetDashboard()
+        {
+            var totalUsuarios = await _context.Usuarios.CountAsync();
+            var usuariosActivos = await _context.Usuarios.CountAsync(u => u.Activo);
+            var pacientes = await _context.Pacientes.CountAsync();
+            var psicologos = await _context.Psicologos.CountAsync();
+            var posts = await _context.Posts.CountAsync();
+            var comentarios = await _context.Comentarios.CountAsync();
+
+            var rolesDistribucion = await _context.Usuarios
+                .GroupBy(u => u.Rol)
+                .Select(g => new { Rol = g.Key, Cantidad = g.Count() })
+                .ToListAsync();
+
+            var comentariosPorPost = await _context.Posts
+                .Select(p => new { p.Titulo, Count = p.Comentarios.Count })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                totalUsuarios,
+                usuariosActivos,
+                pacientes,
+                psicologos,
+                posts,
+                comentarios,
+                rolesDistribucion,
+                comentariosPorPost
+            });
+        }
+
+
         private bool UsuarioExists(int id)
         {
             return _context.Usuarios.Any(e => e.Id == id);
