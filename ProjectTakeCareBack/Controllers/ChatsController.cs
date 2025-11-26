@@ -166,15 +166,50 @@ namespace ProjectTakeCareBack.Controllers
         [HttpPost]
         public async Task<ActionResult<Chat>> PostChat(Chat chat)
         {
-            Console.WriteLine("Nuevo chat recibido:");
-            Console.WriteLine($"ID: {chat.Id}");
-            Console.WriteLine($"Psicologo ID: {chat.IdPsicologo}");
-            Console.WriteLine($"Paciente ID: {chat.IdPaciente}");
-            Console.WriteLine($"Creado el: {chat.CreadoEn}");
+            // 1. Validar IDs
+            if (chat.IdPsicologo <= 0 || chat.IdPaciente <= 0)
+                return BadRequest("IdPsicologo e IdPaciente deben ser válidos.");
+
+            // 2. Verificar existencia del psicólogo
+            var psicologoExiste = await _context.Psicologos
+                .AnyAsync(p => p.Id == chat.IdPsicologo);
+            if (!psicologoExiste)
+                return NotFound("El psicólogo no existe.");
+
+            // 3. Verificar existencia del paciente
+            var pacienteExiste = await _context.Pacientes
+                .AnyAsync(p => p.Id == chat.IdPaciente);
+            if (!pacienteExiste)
+                return NotFound("El paciente no existe.");
+
+            // 4. Verificar si ya existe un chat entre ambos
+            var chatExistente = await _context.Chats
+                .FirstOrDefaultAsync(c =>
+                    c.IdPsicologo == chat.IdPsicologo &&
+                    c.IdPaciente == chat.IdPaciente
+                );
+
+            if (chatExistente != null)
+            {
+                // Opcional: actualizar fecha de último acceso
+                chatExistente.UltimoMensajeEn = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+
+                return Conflict(new
+                {
+                    message = "Ya existe un chat entre este psicólogo y paciente.",
+                    chatId = chatExistente.Id,
+                    chat = chatExistente
+                });
+            }
+
+            // 5. No existe → Crear nuevo chat
+            chat.CreadoEn = DateTime.UtcNow;
+
             _context.Chats.Add(chat);
             await _context.SaveChangesAsync();
-            return CreatedAtAction("GetChat", new { id = chat.Id }, chat);
 
+            return CreatedAtAction("GetChat", new { id = chat.Id }, chat);
         }
 
         // DELETE: api/Chats/5

@@ -421,10 +421,16 @@ namespace ProjectTakeCareBack.Migrations
                     b.Property<string>("Especialidad")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("Estatus")
+                        .HasColumnType("int");
+
                     b.Property<int?>("ExperienciaAnios")
                         .HasColumnType("int");
 
                     b.Property<int?>("IdUsuario")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Plan")
                         .HasColumnType("int");
 
                     b.Property<int?>("TotalResenas")
