@@ -157,10 +157,7 @@ namespace ProjectTakeCareBack.Migrations
 
                     b.HasIndex("IdPsicologo");
 
-                    b.ToTable("Citas", t =>
-                        {
-                            t.HasCheckConstraint("CK_Cita_Fechas", "[FechaInicio] < [FechaFin]");
-                        });
+                    b.ToTable("Citas");
                 });
 
             modelBuilder.Entity("ProjectTakeCareBack.Models.Comentario", b =>
@@ -612,21 +609,19 @@ namespace ProjectTakeCareBack.Migrations
                     b.Property<float>("Calificacion")
                         .HasColumnType("real");
 
-                    b.Property<int>("CitaId")
-                        .HasColumnType("int");
-
                     b.Property<int>("IdCita")
                         .HasColumnType("int");
 
                     b.Property<int>("IdPsicologo")
                         .HasColumnType("int");
 
-                    b.Property<int>("PsicologoId")
+                    b.Property<int?>("PsicologoId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CitaId");
+                    b.HasIndex("IdCita")
+                        .IsUnique();
 
                     b.HasIndex("PsicologoId");
 
@@ -813,16 +808,14 @@ namespace ProjectTakeCareBack.Migrations
             modelBuilder.Entity("ProjectTakeCareBack.Models.Valoracion", b =>
                 {
                     b.HasOne("ProjectTakeCareBack.Models.Cita", "Cita")
-                        .WithMany()
-                        .HasForeignKey("CitaId")
+                        .WithOne("Valoracion")
+                        .HasForeignKey("ProjectTakeCareBack.Models.Valoracion", "IdCita")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("ProjectTakeCareBack.Models.Psicologo", "Psicologo")
                         .WithMany("Valoraciones")
-                        .HasForeignKey("PsicologoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PsicologoId");
 
                     b.Navigation("Cita");
 
@@ -832,6 +825,11 @@ namespace ProjectTakeCareBack.Migrations
             modelBuilder.Entity("ProjectTakeCareBack.Models.Chat", b =>
                 {
                     b.Navigation("Mensajes");
+                });
+
+            modelBuilder.Entity("ProjectTakeCareBack.Models.Cita", b =>
+                {
+                    b.Navigation("Valoracion");
                 });
 
             modelBuilder.Entity("ProjectTakeCareBack.Models.Paciente", b =>

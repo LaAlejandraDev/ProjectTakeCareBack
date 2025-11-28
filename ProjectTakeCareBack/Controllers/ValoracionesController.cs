@@ -85,6 +85,13 @@ namespace ProjectTakeCareBack.Controllers
             if (psicologo == null)
                 return BadRequest("El psicólogo no existe.");
 
+            // Verificar si la cita ya fue valorada antes
+            var valoracionExistente = await _context.Valoracion
+                .FirstOrDefaultAsync(v => v.IdCita == valoracion.IdCita);
+
+            if (valoracionExistente != null)
+                return BadRequest("Esta cita ya fue valorada previamente.");
+
             // Guardar la nueva valoración
             _context.Valoracion.Add(valoracion);
             await _context.SaveChangesAsync();

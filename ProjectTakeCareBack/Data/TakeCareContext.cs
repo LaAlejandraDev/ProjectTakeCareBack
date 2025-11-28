@@ -133,7 +133,10 @@ namespace ProjectTakeCareBack.Data
                 .IsUnique();
 
             modelBuilder.Entity<Cita>()
-                .HasCheckConstraint("CK_Cita_Fechas", "[FechaInicio] < [FechaFin]");
+                 .HasOne(c => c.Valoracion)
+                 .WithOne(v => v.Cita)
+                 .HasForeignKey<Valoracion>(v => v.IdCita);
+
         }
         public DbSet<ProjectTakeCareBack.Models.PsicologoDisponibilidad> PsicologoDisponibilidad { get; set; } = default!;
         public DbSet<ProjectTakeCareBack.Models.Valoracion> Valoracion { get; set; } = default!;
