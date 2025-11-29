@@ -156,6 +156,7 @@ namespace ProjectTakeCareBack.Controllers
                 return BadRequest("El objeto es requerido.");
             }
 
+            // Crear usuario y configurarlo
             var usuario = paciente.Usuario;
             usuario.Rol = ProjectTakeCareBack.Enums.RolUsuario.Paciente;
             usuario.Contrasena = BCrypt.Net.BCrypt.HashPassword(usuario.Contrasena);
@@ -165,9 +166,19 @@ namespace ProjectTakeCareBack.Controllers
             _context.Usuarios.Add(usuario);
             await _context.SaveChangesAsync();
 
+            // Asociar id del usuario creado al paciente
             paciente.IdUsuario = usuario.Id;
             paciente.Usuario = null;
+
             _context.Pacientes.Add(paciente);
+            await _context.SaveChangesAsync();
+
+            var expediente = new Expediente
+            {
+                PacienteId = paciente.Id
+            };
+
+            _context.Expediente.Add(expediente);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetPaciente", new { id = paciente.Id }, paciente);
@@ -212,6 +223,14 @@ namespace ProjectTakeCareBack.Controllers
             };
 
             _context.Pacientes.Add(nuevoPaciente);
+            await _context.SaveChangesAsync();
+
+            var expediente = new Expediente
+            {
+                PacienteId = nuevoPaciente.Id
+            };
+
+            _context.Expediente.Add(expediente);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetPaciente", new { id = nuevoPaciente.Id }, nuevoPaciente);

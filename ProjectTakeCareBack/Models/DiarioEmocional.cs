@@ -10,8 +10,11 @@ namespace ProjectTakeCareBack.Models
         public string EstadoEmocional { get; set; } = null!;
         public int? Nivel { get; set; }
         public string? Comentario { get; set; }
+        public int? ExpedienteId { get; set; }
 
         [JsonIgnore]
         public Paciente? Paciente { get; set; } = null!;
+        [JsonIgnore]
+        public Expediente? Expediente { get; set; }
     }
 }

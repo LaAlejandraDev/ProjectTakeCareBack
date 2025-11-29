@@ -136,6 +136,18 @@ namespace ProjectTakeCareBack.Controllers
                 // 5. Asignar la interpretación a tu modelo
                 diarioEmocional.EstadoEmocional = data!.resultado;
 
+                var expediente = await _context.Expediente
+                        .FirstOrDefaultAsync(e => e.PacienteId == diarioEmocional.IdPaciente);
+
+                if (expediente == null)
+                {
+                    expediente = new Expediente { PacienteId = diarioEmocional.IdPaciente };
+                    _context.Expediente.Add(expediente);
+                    await _context.SaveChangesAsync();
+                }
+
+                diarioEmocional.ExpedienteId = expediente.Id;
+
                 // 6. Guardar en base de datos
                 _context.DiarioEmocional.Add(diarioEmocional);
                 await _context.SaveChangesAsync();

@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using ProjectTakeCareBack.Data;
-using ProjectTakeCareBack.Models;
 using ProjectTakeCareBack.Hubs;
+using ProjectTakeCareBack.Migrations;
+using ProjectTakeCareBack.Models;
 
 namespace ProjectTakeCareBack.Controllers
 {
@@ -138,6 +139,18 @@ namespace ProjectTakeCareBack.Controllers
 
                     cita.FechaInicio = fechaInicio;
                     cita.FechaFin = fechaFin;
+
+                    var expediente = await _context.Expediente
+                        .FirstOrDefaultAsync(e => e.PacienteId == cita.IdPaciente);
+
+                    if (expediente == null)
+                    {
+                        expediente = new Expediente { PacienteId = cita.IdPaciente };
+                        _context.Expediente.Add(expediente);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    cita.ExpedienteId = expediente.Id;
 
                     _context.Citas.Add(cita);
 

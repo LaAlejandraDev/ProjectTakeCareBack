@@ -128,6 +128,9 @@ namespace ProjectTakeCareBack.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("ExpedienteId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("FechaFin")
                         .HasColumnType("datetime2");
 
@@ -152,6 +155,8 @@ namespace ProjectTakeCareBack.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DisponibilidadId");
+
+                    b.HasIndex("ExpedienteId");
 
                     b.HasIndex("IdPaciente");
 
@@ -242,6 +247,9 @@ namespace ProjectTakeCareBack.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("ExpedienteId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
 
@@ -253,9 +261,30 @@ namespace ProjectTakeCareBack.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ExpedienteId");
+
                     b.HasIndex("IdPaciente");
 
                     b.ToTable("DiarioEmocional");
+                });
+
+            modelBuilder.Entity("ProjectTakeCareBack.Models.Expediente", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("PacienteId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PacienteId")
+                        .IsUnique();
+
+                    b.ToTable("Expediente");
                 });
 
             modelBuilder.Entity("ProjectTakeCareBack.Models.Notificacion", b =>
@@ -664,6 +693,10 @@ namespace ProjectTakeCareBack.Migrations
                         .WithMany()
                         .HasForeignKey("DisponibilidadId");
 
+                    b.HasOne("ProjectTakeCareBack.Models.Expediente", "Expediente")
+                        .WithMany("Citas")
+                        .HasForeignKey("ExpedienteId");
+
                     b.HasOne("ProjectTakeCareBack.Models.Paciente", "Paciente")
                         .WithMany("Citas")
                         .HasForeignKey("IdPaciente")
@@ -677,6 +710,8 @@ namespace ProjectTakeCareBack.Migrations
                         .IsRequired();
 
                     b.Navigation("Disponibilidad");
+
+                    b.Navigation("Expediente");
 
                     b.Navigation("Paciente");
 
@@ -715,9 +750,26 @@ namespace ProjectTakeCareBack.Migrations
 
             modelBuilder.Entity("ProjectTakeCareBack.Models.DiarioEmocional", b =>
                 {
+                    b.HasOne("ProjectTakeCareBack.Models.Expediente", "Expediente")
+                        .WithMany("Diarios")
+                        .HasForeignKey("ExpedienteId");
+
                     b.HasOne("ProjectTakeCareBack.Models.Paciente", "Paciente")
                         .WithMany("DiarioEmocional")
                         .HasForeignKey("IdPaciente")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Expediente");
+
+                    b.Navigation("Paciente");
+                });
+
+            modelBuilder.Entity("ProjectTakeCareBack.Models.Expediente", b =>
+                {
+                    b.HasOne("ProjectTakeCareBack.Models.Paciente", "Paciente")
+                        .WithOne("Expediente")
+                        .HasForeignKey("ProjectTakeCareBack.Models.Expediente", "PacienteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -813,11 +865,13 @@ namespace ProjectTakeCareBack.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjectTakeCareBack.Models.Psicologo", null)
+                    b.HasOne("ProjectTakeCareBack.Models.Psicologo", "Psicologo")
                         .WithMany("Valoraciones")
                         .HasForeignKey("PsicologoId");
 
                     b.Navigation("Cita");
+
+                    b.Navigation("Psicologo");
                 });
 
             modelBuilder.Entity("ProjectTakeCareBack.Models.Chat", b =>
@@ -830,6 +884,13 @@ namespace ProjectTakeCareBack.Migrations
                     b.Navigation("Valoracion");
                 });
 
+            modelBuilder.Entity("ProjectTakeCareBack.Models.Expediente", b =>
+                {
+                    b.Navigation("Citas");
+
+                    b.Navigation("Diarios");
+                });
+
             modelBuilder.Entity("ProjectTakeCareBack.Models.Paciente", b =>
                 {
                     b.Navigation("Chats");
@@ -839,6 +900,8 @@ namespace ProjectTakeCareBack.Migrations
                     b.Navigation("CrisisAlerts");
 
                     b.Navigation("DiarioEmocional");
+
+                    b.Navigation("Expediente");
                 });
 
             modelBuilder.Entity("ProjectTakeCareBack.Models.Post", b =>

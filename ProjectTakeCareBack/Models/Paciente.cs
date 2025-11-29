@@ -17,8 +17,10 @@ namespace ProjectTakeCareBack.Models
         public string? Diagnostico { get; set; }
         public string? AntecedentesMedicos { get; set; }
         public string? ContactoEmergencia { get; set; }
+        [JsonIgnore]
+        public Expediente? Expediente { get; set; }
 
-        public Usuario? Usuario { get; set; } = null!;
+        public Usuario? Usuario { get; set; } = null!;  
 
         [JsonIgnore]
         public ICollection<Cita>? Citas { get; set; }

@@ -16,6 +16,7 @@ namespace ProjectTakeCareBack.Models
         public string Estado { get; set; } = "Programada";
         public string? Motivo { get; set; }
         public string? Ubicacion { get; set; }
+        public int? ExpedienteId { get; set; }
         [JsonIgnore]
         public Valoracion? Valoracion { get; set; }
 
@@ -26,6 +27,8 @@ namespace ProjectTakeCareBack.Models
 
         [JsonIgnore]
         public PsicologoDisponibilidad? Disponibilidad { get; set; } = null!;
+        [JsonIgnore]
+        public Expediente? Expediente { get; set; } 
     }
 
 }

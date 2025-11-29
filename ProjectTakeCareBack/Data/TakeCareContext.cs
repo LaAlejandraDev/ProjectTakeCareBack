@@ -137,8 +137,24 @@ namespace ProjectTakeCareBack.Data
                  .WithOne(v => v.Cita)
                  .HasForeignKey<Valoracion>(v => v.IdCita);
 
+            // Expediente relaciones : Paciente, Diario, Citas
+            modelBuilder.Entity<Paciente>()
+                .HasOne(p => p.Expediente)
+                .WithOne(e => e.Paciente)
+                .HasForeignKey<Expediente>(e => e.PacienteId);
+
+            modelBuilder.Entity<Expediente>()
+                .HasMany(e => e.Diarios)
+                .WithOne(d => d.Expediente)
+                .HasForeignKey(d => d.ExpedienteId);
+
+            modelBuilder.Entity<Expediente>()
+                .HasMany(e => e.Citas)
+                .WithOne(c => c.Expediente)
+                .HasForeignKey(c => c.ExpedienteId);
         }
         public DbSet<ProjectTakeCareBack.Models.PsicologoDisponibilidad> PsicologoDisponibilidad { get; set; } = default!;
         public DbSet<ProjectTakeCareBack.Models.Valoracion> Valoracion { get; set; } = default!;
+        public DbSet<ProjectTakeCareBack.Models.Expediente> Expediente { get; set; } = default!;
     }
 }
