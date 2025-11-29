@@ -813,13 +813,11 @@ namespace ProjectTakeCareBack.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjectTakeCareBack.Models.Psicologo", "Psicologo")
+                    b.HasOne("ProjectTakeCareBack.Models.Psicologo", null)
                         .WithMany("Valoraciones")
                         .HasForeignKey("PsicologoId");
 
                     b.Navigation("Cita");
-
-                    b.Navigation("Psicologo");
                 });
 
             modelBuilder.Entity("ProjectTakeCareBack.Models.Chat", b =>
