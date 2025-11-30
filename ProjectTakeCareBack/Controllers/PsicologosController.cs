@@ -26,7 +26,16 @@ namespace ProjectTakeCareBack.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Psicologo>>> GetPsicologos()
         {
-            return await _context.Psicologos.ToListAsync();
+            var lista = await _context.Psicologos
+                .Include(e => e.Usuario)
+                .ToListAsync();
+
+            if (!lista.Any())
+            {
+                return NotFound("No se encontro ningun psicologo");
+            }
+
+            return lista;
         }
 
         // GET: api/Psicologoes/5
@@ -326,10 +335,6 @@ namespace ProjectTakeCareBack.Controllers
 
             return Ok(new { mensaje = "Plan solicitado. En espera de aprobación." });
         }
-
-
-
-
 
         private bool PsicologoExists(int id)
         {

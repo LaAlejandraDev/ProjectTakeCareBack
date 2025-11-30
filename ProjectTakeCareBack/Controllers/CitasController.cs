@@ -78,6 +78,43 @@ namespace ProjectTakeCareBack.Controllers
             return Ok(citas);
         }
 
+        // PUT: api/Citas/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutCita(int id, [FromBody] Cita citaUpdate)
+        {
+            if (id != citaUpdate.Id)
+                return BadRequest("El ID de la cita no coincide.");
+
+            var cita = await _context.Citas
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (cita == null)
+                return NotFound("Cita no encontrada.");
+
+            //  Campos que NO deberían poder modificarse directamente:
+            // IdPaciente, IdPsicologo, ExpedienteId, IdDisponibilidad, FechaInicio, FechaFin
+
+            // Solo actualizar campos permitidos
+            cita.Estado = citaUpdate.Estado ?? cita.Estado;
+            cita.Motivo = citaUpdate.Motivo ?? cita.Motivo;
+            cita.FechaFin = citaUpdate.FechaFin;
+            cita.FechaInicio = citaUpdate.FechaInicio;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CitaExists(id))
+                    return NotFound("La cita ya no existe.");
+                else
+                    throw;
+            }
+
+            return Ok(cita);
+        }
+
         // POST: api/Citas
         [HttpPost]
         public async Task<ActionResult<Cita>> PostCita([FromBody] Cita cita)
@@ -88,58 +125,55 @@ namespace ProjectTakeCareBack.Controllers
             if (cita.IdDisponibilidad <= 0)
                 return BadRequest("IdDisponibilidad inválido.");
 
+            if (cita.FechaInicio >= cita.FechaFin)
+                return BadRequest("La hora de inicio debe ser menor que la hora de fin.");
+
             using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
+                    // Obtener disponibilidad con bloqueo para evitar conflictos
                     var disponibilidad = await _context.PsicologoDisponibilidad
                         .FromSqlRaw("SELECT * FROM PsicologoDisponibilidad WITH (UPDLOCK, ROWLOCK) WHERE Id = {0}", cita.IdDisponibilidad)
                         .AsTracking()
                         .FirstOrDefaultAsync();
 
                     if (disponibilidad == null)
-                    {
-                        await transaction.RollbackAsync();
                         return BadRequest("La disponibilidad indicada no existe.");
-                    }
 
                     if (disponibilidad.IdPsicologo != cita.IdPsicologo)
-                    {
-                        await transaction.RollbackAsync();
                         return BadRequest("La disponibilidad no corresponde al psicólogo indicado.");
-                    }
 
                     var diaObjetivo = disponibilidad.Fecha.Date;
 
-                    // REGLA: Un paciente solo puede tener 1 cita ese día
+                    // Validación paciente no tenga más de una cita ese día
                     bool pacienteTieneCita = await _context.Citas
-                        .AnyAsync(c => c.IdPaciente == cita.IdPaciente && c.FechaInicio.Date == diaObjetivo);
+                        .AnyAsync(c =>
+                            c.IdPaciente == cita.IdPaciente &&
+                            c.FechaInicio.Date == diaObjetivo
+                        );
 
                     if (pacienteTieneCita)
-                    {
-                        await transaction.RollbackAsync();
                         return BadRequest("El paciente ya tiene una cita este día.");
-                    }
 
-                    // BLOQUES DE HORARIO AUTOMÁTICOS
-                    int citasPrevias = disponibilidad.CitasAgendadas;
+                    // Validar traslapes con otras citas del psicólogo en ese día
+                    bool traslape = await _context.Citas.AnyAsync(c =>
+                        c.IdPsicologo == cita.IdPsicologo &&
+                        c.FechaInicio.Date == diaObjetivo &&
+                        (
+                            // Inicio dentro de otra cita
+                            (cita.FechaInicio >= c.FechaInicio && cita.FechaInicio < c.FechaFin) ||
+                            // Fin dentro de otra cita
+                            (cita.FechaFin > c.FechaInicio && cita.FechaFin <= c.FechaFin) ||
+                            // Contiene completamente otra cita
+                            (cita.FechaInicio <= c.FechaInicio && cita.FechaFin >= c.FechaFin)
+                        )
+                    );
 
-                    if (citasPrevias >= 4)
-                    {
-                        await transaction.RollbackAsync();
-                        return BadRequest("No hay cupos disponibles para este día.");
-                    }
+                    if (traslape)
+                        return BadRequest("Este horario ya esta ocupado.");
 
-                    DateTime fechaBase = disponibilidad.Fecha.Date;
-                    TimeSpan horaInicioBase = new TimeSpan(7, 0, 0); // 7am
-                    TimeSpan duracion = new TimeSpan(2, 0, 0);      // 2h por cita
-
-                    var fechaInicio = fechaBase + horaInicioBase + TimeSpan.FromTicks(duracion.Ticks * citasPrevias);
-                    var fechaFin = fechaInicio + duracion;
-
-                    cita.FechaInicio = fechaInicio;
-                    cita.FechaFin = fechaFin;
-
+                    // Obtener/crear expediente
                     var expediente = await _context.Expediente
                         .FirstOrDefaultAsync(e => e.PacienteId == cita.IdPaciente);
 
@@ -152,10 +186,8 @@ namespace ProjectTakeCareBack.Controllers
 
                     cita.ExpedienteId = expediente.Id;
 
+                    // Guardar la cita
                     _context.Citas.Add(cita);
-
-                    disponibilidad.CitasAgendadas += 1;
-                    _context.PsicologoDisponibilidad.Update(disponibilidad);
 
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
@@ -169,7 +201,7 @@ namespace ProjectTakeCareBack.Controllers
                     await transaction.RollbackAsync();
                     return StatusCode(StatusCodes.Status409Conflict, "Conflicto de concurrencia, intenta de nuevo.");
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
                     return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al registrar cita.");

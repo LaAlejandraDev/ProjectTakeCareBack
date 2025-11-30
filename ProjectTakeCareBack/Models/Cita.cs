@@ -28,7 +28,9 @@ namespace ProjectTakeCareBack.Models
         [JsonIgnore]
         public PsicologoDisponibilidad? Disponibilidad { get; set; } = null!;
         [JsonIgnore]
-        public Expediente? Expediente { get; set; } 
+        public Expediente? Expediente { get; set; }
+        [JsonIgnore]
+        public CitaComentario? Comentario { get; set; } = null!;
     }
 
 }
