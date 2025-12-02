@@ -82,19 +82,19 @@ namespace ProjectTakeCareBack.Controllers
         [HttpPost]
         public async Task<ActionResult<Post>> PostPost(Post post)
         {
+            // Validación de usuario
             var usuarioExistente = await _context.Usuarios.FindAsync(post.IdUsuario);
             if (usuarioExistente == null)
-                return BadRequest($"No existe un usuario con Id {post.IdUsuario}");
+                return BadRequest("El usuario no existe.");
 
             post.Usuario = usuarioExistente;
 
             _context.Posts.Add(post);
             await _context.SaveChangesAsync();
 
-            await _context.Entry(post).Reference(p => p.Usuario).LoadAsync();
-
             return CreatedAtAction("GetPost", new { id = post.Id }, post);
         }
+
 
         // DELETE: api/Posts/5
         [HttpDelete("{id}")]

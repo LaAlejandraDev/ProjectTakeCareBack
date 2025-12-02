@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using ProjectTakeCareBack.Data;
 using ProjectTakeCareBack.Hubs;
-using ProjectTakeCareBack.Migrations;
 using ProjectTakeCareBack.Models;
 
 namespace ProjectTakeCareBack.Controllers

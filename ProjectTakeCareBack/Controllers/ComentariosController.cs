@@ -127,14 +127,7 @@ namespace ProjectTakeCareBack.Controllers
             post.CommentCount += 1;
             _context.Entry(post).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { mensaje = "Error al agregar el comentario", detalle = ex.Message });
-            }
+            await _context.SaveChangesAsync();
 
             return Ok(new
             {
